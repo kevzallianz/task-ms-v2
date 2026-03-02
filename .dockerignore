@@ -1,0 +1,29 @@
+# Node
+node_modules
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+
+# Laravel
+vendor
+.env
+.env.*
+storage/*.key
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+
+# Vite / build
+public/build
+resources/js/**/.vite
+
+# OS / Editor
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+
+# Docker
+docker-compose.override.yml

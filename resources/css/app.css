@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap");
+@import "tailwindcss";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+:root {
+    --font-family: "Archivo", sans-serif;
+    --navy-blue: #160d76;
+    --tuft-blue: #4094d9;
+    --cadmium-orange: #f08530;
+    --baby-powder: #fffffa;
+    --eerie-black: #222222;
+}
+
+@theme {
+    --font-sans: var(--font-family);
+    --color-primary: var(--navy-blue);
+    --color-secondary: var(--tuft-blue);
+    --color-accent: var(--cadmium-orange);
+    --color-background: var(--baby-powder);
+    --color-foreground: var(--eerie-black);
+}
+* {
+    @apply outline-none;
+}
+
+body {
+    @apply bg-background text-foreground font-sans;
+}
+
+button {
+    @apply cursor-pointer active:scale-95 duration-200;
+}

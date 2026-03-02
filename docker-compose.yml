@@ -1,0 +1,45 @@
+services:
+  app:
+    env_file:
+      - .env.production
+    image: taskms/app:latest
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: task_ms
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+    depends_on:
+      - db
+
+  nginx:
+    image: taskms/nginx:latest
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: task_ms_nginx
+    ports:
+      - "3000:80"
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - app
+
+  db:
+    image: taskms/db:latest
+    build:
+      context: .
+      dockerfile: docker/mysql/Dockerfile
+    container_name: task_ms_db
+    environment:
+      MYSQL_DATABASE: task_ms
+      MYSQL_USER: taskms
+      MYSQL_PASSWORD: busdev.taskms0
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
