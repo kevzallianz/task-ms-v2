@@ -43,11 +43,11 @@
                 {{-- Projects --}}
                 <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
                             <x-heroicon-o-folder-open class="w-4 h-4 text-secondary" />
                             Projects
                         </h2>
-                        <span class="text-xs text-gray-400 font-medium">{{ $campaign->projects->count() }} total</span>
+                        <span class="text-xs text-foreground font-medium">{{ $campaign->projects->count() }} total</span>
                     </div>
 
                     @if ($campaign->projects->isNotEmpty())
@@ -56,19 +56,19 @@
                                 <thead class="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th
-                                            class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-5 py-2.5">
+                                            class="text-left text-sm font-medium text-foreground uppercase px-5 py-2.5">
                                             Title</th>
                                         <th
-                                            class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                            class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                             Status</th>
                                         <th
-                                            class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                            class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                             Start Date</th>
                                         <th
-                                            class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                            class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                             Target Date</th>
                                         <th
-                                            class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                            class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                             Created</th>
                                         <th class="px-4 py-2.5"></th>
                                     </tr>
@@ -102,18 +102,18 @@
                                                     {{ $badgeText }}
                                                 </span>
                                             </td>
-                                            <td class="px-4 py-2.5 text-xs text-gray-500">
+                                            <td class="px-4 py-2.5 text-sm text-foreground">
                                                 {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('M d, Y') : '—' }}
                                             </td>
-                                            <td class="px-4 py-2.5 text-xs text-gray-500">
+                                            <td class="px-4 py-2.5 text-sm text-foreground">
                                                 {{ $project->target_date ? \Carbon\Carbon::parse($project->target_date)->format('M d, Y') : '—' }}
                                             </td>
-                                            <td class="px-4 py-2.5 text-xs text-gray-400">
+                                            <td class="px-4 py-2.5 text-sm text-foreground">
                                                 {{ $project->created_at->diffForHumans() }}
                                             </td>
                                             <td class="px-4 py-2.5">
                                                 <a href="{{ route('admin.campaigns.projects.show', [$campaign, $project]) }}"
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary border border-primary/30 bg-primary/5 rounded-lg hover:bg-primary/10 transition whitespace-nowrap">
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary border border-primary/30 bg-primary/5 rounded-lg hover:bg-primary/10 transition whitespace-nowrap">
                                                     <x-heroicon-o-eye class="w-3.5 h-3.5" />
                                                     View
                                                 </a>
@@ -183,7 +183,7 @@
             {{-- Tasks --}}
             <section class="bg-white rounded-xl col-span-3 border border-gray-200 overflow-hidden">
                 <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-                    <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
                         <x-heroicon-o-clipboard-document-list class="w-4 h-4 text-accent" />
                         Tasks
                     </h2>
@@ -194,7 +194,7 @@
                 <div class="px-5 py-3 bg-gray-50/70 border-b border-gray-100 flex flex-wrap items-end gap-3">
                     {{-- Status Filter --}}
                     <div class="flex flex-col gap-1 min-w-36">
-                        <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Status</label>
+                        <label class="text-[10px] font-semibold text-foreground uppercase tracking-wider">Status</label>
                         <select id="filter-status"
                             class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white text-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 transition">
                             <option value="">All Statuses</option>
@@ -208,7 +208,7 @@
 
                     {{-- Project Filter --}}
                     <div class="flex flex-col gap-1 min-w-44">
-                        <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Project</label>
+                        <label class="text-[10px] font-semibold text-foreground uppercase tracking-wider">Project</label>
                         <select id="filter-project"
                             class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white text-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 transition">
                             <option value="">All Projects</option>
@@ -220,7 +220,7 @@
 
                     {{-- Member Filter --}}
                     <div class="flex flex-col gap-1 min-w-44">
-                        <label class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Assigned To</label>
+                        <label class="text-[10px] font-semibold text-foreground uppercase tracking-wider">Assigned To</label>
                         <select id="filter-member"
                             class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white text-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 transition">
                             <option value="">All Members</option>
@@ -248,19 +248,19 @@
                             <thead class="bg-gray-50 border-b border-gray-200">
                                 <tr>
                                     <th
-                                        class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-5 py-2.5">
+                                        class="text-left text-sm font-medium text-foreground uppercase px-5 py-2.5">
                                         Task</th>
                                     <th
-                                        class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                        class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                         Project</th>
                                     <th
-                                        class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                        class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                         Assigned To</th>
                                     <th
-                                        class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                        class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                         Status</th>
                                     <th
-                                        class="text-left text-xs font-medium text-foreground/50 uppercase tracking-wider px-4 py-2.5">
+                                        class="text-left text-sm font-medium text-foreground uppercase px-4 py-2.5">
                                         Target</th>
                                 </tr>
                             </thead>
@@ -285,18 +285,18 @@
                                         data-project="{{ $task->campaign_project_id ?? '' }}"
                                         data-members="{{ $memberIds }}">
                                         <td class="px-5 py-2.5">
-                                            <p class="text-xs font-medium text-foreground">{{ $task->title }}</p>
+                                            <p class="text-sm font-medium text-foreground">{{ $task->title }}</p>
                                             @if ($task->description)
-                                                <p class="text-xs text-gray-400 line-clamp-1 mt-0.5">
+                                                <p class="text-sm text-gray-400 line-clamp-1 mt-0.5">
                                                     {{ $task->description }}</p>
                                             @endif
                                         </td>
                                         <td class="px-4 py-2.5">
                                             @if ($task->project)
                                                 <span
-                                                    class="text-xs text-gray-500 truncate max-w-30 block">{{ $task->project->title }}</span>
+                                                    class="text-sm truncate max-w-30 block">{{ $task->project->title }}</span>
                                             @else
-                                                <span class="text-xs text-gray-300">—</span>
+                                                <span class="text-sm text-gray-300">—</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-2.5">
@@ -313,21 +313,21 @@
                                                                 </span>
                                                             </div>
                                                             <span
-                                                                class="text-xs text-primary font-medium whitespace-nowrap">{{ $assigned->user->name ?? '—' }}</span>
+                                                                class="text-sm text-primary font-medium whitespace-nowrap">{{ $assigned->user->name ?? '—' }}</span>
                                                         </div>
                                                     @endforeach
                                                 </div>
                                             @else
-                                                <span class="text-xs text-gray-300">Unassigned</span>
+                                                <span class="text-sm text-gray-300">Unassigned</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-2.5">
                                             <span
-                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ $taskBadge }}">
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-sm font-semibold {{ $taskBadge }}">
                                                 {{ $taskLabel }}
                                             </span>
                                         </td>
-                                        <td class="px-4 py-2.5 text-xs text-gray-500">
+                                        <td class="px-4 py-2.5 text-sm text-foreground">
                                             {{ $task->target_date ? \Carbon\Carbon::parse($task->target_date)->format('M d, Y') : '—' }}
                                         </td>
                                     </tr>
