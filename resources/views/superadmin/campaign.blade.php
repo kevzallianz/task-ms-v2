@@ -44,7 +44,7 @@
 				</thead>
 				<tbody class="divide-y divide-gray-200">
 					@forelse($campaigns as $campaign)
-					<tr class="hover:bg-gray-50">
+					<tr class="hover:bg-gray-50" data-campaign-row="{{ $campaign->id }}">
 						<td class="px-4 py-3 align-top">
 							<div class="flex items-center gap-2">
 								<span class="font-medium text-foreground text-sm">{{ $campaign->name }}</span>
@@ -60,10 +60,34 @@
 							<span class="text-sm text-gray-600">{{ optional($campaign->created_at)->diffForHumans() }}</span>
 						</td>
 						<td class="px-4 py-3 align-top">
-							<a href="{{ route('superadmin.campaigns.members', $campaign) }}" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-primary border border-primary/50 bg-white w-fit rounded hover:bg-white/80 transition">
-								<x-heroicon-o-users class="w-4 h-4" />
-								View Members
-							</a>
+							<div class="flex items-center gap-2">
+								<a href="{{ route('superadmin.campaigns.members', $campaign) }}" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary border border-primary/50 bg-white rounded hover:bg-white/80 transition">
+									<x-heroicon-o-users class="w-4 h-4" />
+									Members
+								</a>
+								<button
+									type="button"
+									class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-secondary border border-secondary/50 bg-white rounded hover:bg-white/80 transition campaign-edit-open"
+									data-campaign-id="{{ $campaign->id }}"
+									data-campaign-name="{{ $campaign->name }}"
+									data-campaign-description="{{ $campaign->description ?? '' }}"
+									data-update-url="{{ route('superadmin.campaigns.update', $campaign) }}"
+									aria-label="Edit {{ $campaign->name }}"
+								>
+									<x-heroicon-o-pencil-square class="w-4 h-4" />
+									Edit
+								</button>
+								<button
+									type="button"
+									class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 bg-white rounded hover:bg-red-50 transition campaign-delete-open"
+									data-campaign-id="{{ $campaign->id }}"
+									data-campaign-name="{{ $campaign->name }}"								data-members-count="{{ $campaign->members_count }}"									data-delete-url="{{ route('superadmin.campaigns.delete', $campaign) }}"
+									aria-label="Delete {{ $campaign->name }}"
+								>
+									<x-heroicon-o-trash class="w-4 h-4" />
+									Delete
+								</button>
+							</div>
 						</td>
 					</tr>
 					@empty
@@ -88,6 +112,8 @@
 	</section>
 	{{-- Add Campaign Modal Component --}}
 	@include('components.superadmin.add-campaign-modal')
+	@include('components.superadmin.edit-campaign-modal')
+	@include('components.superadmin.delete-campaign-modal')
 
 	{{-- Script --}}
 	@vite(['resources/js/superadmin/index.js'])

@@ -93,6 +93,18 @@
                 <x-heroicon-o-adjustments-vertical class="w-4 h-4" />
                 Role
             </button>
+
+            <button
+                type="button"
+                class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 bg-white rounded hover:bg-red-50 transition user-delete-open"
+                data-user-id="{{ $user->id }}"
+                data-user-name="{{ $user->name ?? $user->email }}"
+                data-delete-url="{{ route('superadmin.users.delete', $user) }}"
+                aria-label="Delete {{ $user->name ?? $user->email }}"
+            >
+                <x-heroicon-o-trash class="w-4 h-4" />
+                Delete
+            </button>
         </div>
     </td>
 </tr>

@@ -68,11 +68,14 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:superadmin')->group(function () {
         Route::get('/~/campaigns', [SuperAdminController::class, 'campaigns'])->name('superadmin.campaigns');
         Route::post('/~/campaigns', [SuperAdminController::class, 'storeCampaign'])->name('superadmin.campaigns.store');
+        Route::put('/~/campaigns/{campaign}', [SuperAdminController::class, 'updateCampaign'])->name('superadmin.campaigns.update');
+        Route::delete('/~/campaigns/{campaign}', [SuperAdminController::class, 'deleteCampaign'])->name('superadmin.campaigns.delete');
         Route::get('/~/campaigns/{campaign}/members', [SuperAdminController::class, 'campaignMembers'])->name('superadmin.campaigns.members');
         Route::get('/~/users', [SuperAdminController::class, 'users'])->name('superadmin.users');
         Route::post('/~/users/bulk/campaign', [SuperAdminController::class, 'assignUsersToCampaignBulk'])->name('superadmin.users.assign-campaign-bulk');
         Route::put('/~/users/{user}/role', [SuperAdminController::class, 'updateUserRole'])->name('superadmin.users.update-role');
         Route::post('/~/users/{user}/campaign', [SuperAdminController::class, 'assignUserToCampaign'])->name('superadmin.users.assign-campaign');
+        Route::delete('/~/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.users.delete');
     });
 
     Route::middleware('role:admin')->group(function () {

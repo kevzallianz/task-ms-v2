@@ -1,45 +1,44 @@
+version: "3.9"
+
 services:
   app:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: technote
     env_file:
       - .env.production
-    image: taskms/app:latest
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
-    container_name: task_ms
-    working_dir: /var/www
     volumes:
-      - ./:/var/www
-      - ./docker/php/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
-    depends_on:
-      - db
+      - .:/var/www
+    networks:
+      - technote-network
 
   nginx:
-    image: taskms/nginx:latest
-    build:
-      context: .
-      dockerfile: docker/nginx/Dockerfile
-    container_name: task_ms_nginx
+    image: nginx:latest
+    container_name: technote_nginx
     ports:
-      - "3000:80"
+      - "8000:80"
     volumes:
-      - ./:/var/www
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
+    networks:
+      - technote-network
 
-  db:
-    image: taskms/db:latest
-    build:
-      context: .
-      dockerfile: docker/mysql/Dockerfile
-    container_name: task_ms_db
+  mysql:
+    image: mysql:8.0
+    container_name: technote_db
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: task_ms
-      MYSQL_USER: taskms
-      MYSQL_PASSWORD: busdev.taskms0
-      MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - dbdata:/var/lib/mysql
+      MYSQL_ROOT_PASSWORD: kevs.busdev!!
+      MYSQL_USER: technote
+      MYSQL_PASSWORD: technote.busdev!!
+    ports:
+      - "3306:3306"
+    networks:
+      - technote-network
 
-volumes:
-  dbdata:
+networks:
+  technote-network:

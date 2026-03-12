@@ -81,6 +81,7 @@
 	<x-superadmin.users.role-modal />
 	<x-superadmin.users.assign-campaign-modal :campaigns="$campaignOptions" />
 	<x-superadmin.users.assign-campaign-bulk-modal :campaigns="$campaignOptions" />
+	<x-superadmin.users.delete-modal />
 
 	@vite(['resources/js/superadmin/index.js'])
 </main>

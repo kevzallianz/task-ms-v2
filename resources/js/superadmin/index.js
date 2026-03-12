@@ -1,4 +1,7 @@
 import './add-campaign'
+import './campaign-edit'
+import './campaign-delete'
 import './user-campaign-bulk'
 import './user-campaign'
 import './user-role'
+import './user-delete'

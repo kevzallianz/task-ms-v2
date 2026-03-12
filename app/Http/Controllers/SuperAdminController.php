@@ -6,6 +6,7 @@ use App\Models\Campaign;
 use App\Models\CampaignMember;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SuperAdminController extends Controller
 {
@@ -183,5 +184,59 @@ class SuperAdminController extends Controller
             'message' => 'Campaign created successfully',
             'campaign' => $campaign,
         ], 201);
+    }
+
+    public function updateCampaign(Request $request, Campaign $campaign)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:100'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ], [
+            'name.required' => 'Campaign name is required.',
+            'name.max' => 'Name must not exceed 100 characters.',
+            'description.max' => 'Description must not exceed 255 characters.',
+        ]);
+
+        $campaign->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Campaign updated successfully.',
+            'campaign' => $campaign,
+        ]);
+    }
+
+    public function deleteCampaign(Campaign $campaign)
+    {
+        $campaign->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Campaign deleted successfully.',
+        ]);
+    }
+
+    public function deleteUser(User $user)
+    {
+        // Prevent deleting the currently authenticated user
+        if ($user->id === Auth::user()->id) {
+            return response()->json([
+                'message' => 'You cannot delete your own account.',
+            ], 422);
+        }
+
+        // Prevent deleting the last superadmin
+        if ($user->role === 'superadmin' && User::where('role', 'superadmin')->count() <= 1) {
+            return response()->json([
+                'message' => 'Cannot delete the last superadmin.',
+            ], 422);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User deleted successfully.',
+        ]);
     }
 }
