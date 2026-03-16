@@ -256,6 +256,361 @@
         </div>
     </section>
 
+    {{-- Task Calendar --}}
+    <section class="bg-white rounded-lg border border-gray-200 p-6">
+        {{-- Header & Legend --}}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-2">
+                <x-heroicon-o-calendar-days class="w-5 h-5 text-primary" />
+                <h2 class="text-base font-semibold text-primary">Campaign Task Calendar</h2>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                    <span class="text-gray-600">Planning</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                    <span class="text-gray-600">Ongoing</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                    <span class="text-gray-600">On Hold</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                    <span class="text-gray-600">Accomplished / Completed</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>
+                    <span class="text-gray-600">Pending</span>
+                </div>
+                <span class="w-px h-4 bg-gray-200"></span>
+                <div class="flex items-center gap-1.5">
+                    <span class="inline-block w-1 h-3 rounded-sm bg-purple-400"></span>
+                    <span class="text-gray-600">Project Task</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Month Navigation --}}
+        <div class="flex items-center justify-between mb-4">
+            <button id="cal-prev" class="p-2 rounded-lg hover:bg-gray-100 transition">
+                <x-heroicon-o-chevron-left class="w-4 h-4 text-gray-600" />
+            </button>
+            <h3 id="cal-month-label" class="text-sm font-semibold text-gray-800"></h3>
+            <button id="cal-next" class="p-2 rounded-lg hover:bg-gray-100 transition">
+                <x-heroicon-o-chevron-right class="w-4 h-4 text-gray-600" />
+            </button>
+        </div>
+
+        {{-- Day-of-week headers --}}
+        <div class="grid grid-cols-7 mb-1">
+            @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $dow)
+            <div class="text-center text-xs font-medium text-gray-500 py-1">{{ $dow }}</div>
+            @endforeach
+        </div>
+
+        {{-- Calendar Grid --}}
+        <div id="cal-grid" class="grid grid-cols-7 gap-1"></div>
+
+        {{-- Task Detail Panel --}}
+        <div id="cal-detail" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div class="flex items-center justify-between mb-3">
+                <h4 id="cal-detail-date" class="text-sm font-semibold text-gray-800"></h4>
+                <button id="cal-detail-close" class="text-gray-400 hover:text-gray-600 transition">
+                    <x-heroicon-o-x-mark class="w-4 h-4" />
+                </button>
+            </div>
+            <div id="cal-detail-tasks" class="space-y-2 max-h-56 overflow-y-auto"></div>
+        </div>
+    </section>
+
+    <script>
+    (function () {
+        const tasks = @json($calendarTasks);
+
+        // Index tasks by target_date (deadline day)
+        const tasksByDate = {};
+        tasks.forEach(function (task) {
+            const d = task.target_date;
+            if (!tasksByDate[d]) tasksByDate[d] = [];
+            tasksByDate[d].push(task);
+        });
+
+        // Index by every day in the start→end span (for bar highlighting)
+        const spansByDate = {};
+        tasks.forEach(function (task) {
+            if (!task.start_date) return;
+            const start = new Date(task.start_date + 'T00:00:00');
+            const end   = new Date(task.target_date + 'T00:00:00');
+            for (let cur = new Date(start); cur <= end; cur.setDate(cur.getDate() + 1)) {
+                const key = cur.getFullYear() + '-' + pad(cur.getMonth() + 1) + '-' + pad(cur.getDate());
+                if (!spansByDate[key]) spansByDate[key] = [];
+                spansByDate[key].push(task);
+            }
+        });
+
+        const statusConfig = {
+            planning:     { color: '#3b82f6', textClass: 'text-blue-700',   bgClass: 'bg-blue-100',   dot: 'bg-blue-500',   badge: 'bg-blue-100 text-blue-700 border-blue-200',     label: 'Planning' },
+            ongoing:      { color: '#eab308', textClass: 'text-yellow-700', bgClass: 'bg-yellow-100', dot: 'bg-yellow-500', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200', label: 'Ongoing' },
+            on_hold:      { color: '#f97316', textClass: 'text-orange-700', bgClass: 'bg-orange-100', dot: 'bg-orange-500', badge: 'bg-orange-100 text-orange-700 border-orange-200', label: 'On Hold' },
+            accomplished: { color: '#22c55e', textClass: 'text-green-700',  bgClass: 'bg-green-100',  dot: 'bg-green-500',  badge: 'bg-green-100 text-green-700 border-green-200',   label: 'Accomplished' },
+            pending:      { color: '#9ca3af', textClass: 'text-gray-600',   bgClass: 'bg-gray-100',   dot: 'bg-gray-400',   badge: 'bg-gray-100 text-gray-600 border-gray-200',       label: 'Pending' },
+            completed:    { color: '#22c55e', textClass: 'text-green-700',  bgClass: 'bg-green-100',  dot: 'bg-green-500',  badge: 'bg-green-100 text-green-700 border-green-200',   label: 'Completed' },
+        };
+
+        const isDone = (task) => task.status === 'accomplished' || task.status === 'completed';
+
+        const MONTHS = ['January','February','March','April','May','June',
+                        'July','August','September','October','November','December'];
+
+        const todayRaw = new Date();
+        todayRaw.setHours(0, 0, 0, 0);
+        let viewYear  = todayRaw.getFullYear();
+        let viewMonth = todayRaw.getMonth();
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+        function todayStr() {
+            return `${todayRaw.getFullYear()}-${pad(todayRaw.getMonth() + 1)}-${pad(todayRaw.getDate())}`;
+        }
+        function fmtShort(dateStr) {
+            return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+        function fmtLong(dateStr) {
+            return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function renderCalendar() {
+            const grid  = document.getElementById('cal-grid');
+            const label = document.getElementById('cal-month-label');
+            grid.innerHTML = '';
+            document.getElementById('cal-detail').classList.add('hidden');
+
+            label.textContent = MONTHS[viewMonth] + ' ' + viewYear;
+
+            const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const tStr        = todayStr();
+            const prefix      = `${viewYear}-${pad(viewMonth + 1)}-`;
+
+            // Empty leading cells
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'rounded-lg min-h-28';
+                grid.appendChild(empty);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr     = prefix + pad(d);
+                const deadlines   = tasksByDate[dateStr] || [];   // tasks due on this day
+                const spanning    = spansByDate[dateStr] || [];    // tasks active across this day
+                const isToday     = dateStr === tStr;
+                const hasActivity = deadlines.length > 0 || spanning.length > 0;
+
+                // Merge for detail panel
+                const allMap = new Map();
+                spanning.forEach(t  => allMap.set(t.title + '|' + t.target_date, { ...t, isDue: false }));
+                deadlines.forEach(t => {
+                    const k = t.title + '|' + t.target_date;
+                    if (allMap.has(k)) allMap.get(k).isDue = true;
+                    else allMap.set(k, { ...t, isDue: true });
+                });
+                const allDay = [...allMap.values()];
+
+                const cell = document.createElement('div');
+                cell.className = [
+                    'min-h-28 rounded-lg border flex flex-col transition select-none overflow-hidden',
+                    isToday ? 'border-primary bg-blue-50' : 'border-gray-100 hover:bg-gray-50',
+                    hasActivity ? 'cursor-pointer' : '',
+                ].join(' ');
+
+                // ── Top: date number + "due today" indicator ──
+                const header = document.createElement('div');
+                header.className = 'flex items-start justify-between px-2 pt-2 pb-1';
+
+                const num = document.createElement('span');
+                num.className = 'text-sm font-bold leading-none ' + (isToday ? 'text-primary' : 'text-gray-700');
+                num.textContent = d;
+                header.appendChild(num);
+
+                const nonAccomplishedDeadlines = deadlines.filter(t => !isDone(t));
+                if (nonAccomplishedDeadlines.length > 0 && dateStr === tStr) {
+                    const dueLabel = document.createElement('span');
+                    dueLabel.className = 'text-red-500 font-bold leading-none text-xs';
+                    dueLabel.textContent = '● DUE';
+                    header.appendChild(dueLabel);
+                }
+                cell.appendChild(header);
+
+                // ── Task chips: show tasks whose deadline is THIS day (with name + due date) ──
+                if (deadlines.length > 0) {
+                    const chipWrap = document.createElement('div');
+                    chipWrap.className = 'flex flex-col gap-1 px-1.5';
+
+                    const visible = deadlines.slice(0, 2);
+                    visible.forEach(function (task) {
+                        const cfg  = statusConfig[task.status] || { color: '#9ca3af', textClass: 'text-gray-700', bgClass: 'bg-gray-100' };
+                        const chip = document.createElement('div');
+                        chip.className = cfg.bgClass + ' rounded-md px-1.5 py-1 border border-white/60 hover:opacity-80 transition';
+                        chip.style.borderLeft = task.type === 'project' ? '3px solid #a855f7' : '';
+                        chip.style.cursor = 'pointer';
+                        chip.addEventListener('click', function(e) { e.stopPropagation(); if (task.url) window.location.href = task.url; });
+
+                        const titleEl = document.createElement('p');
+                        titleEl.className = cfg.textClass + ' font-semibold truncate text-xs leading-snug';
+                        titleEl.textContent = task.title;
+
+                        const dateEl = document.createElement('p');
+                        dateEl.className = 'text-gray-500 truncate text-xs leading-snug';
+                        if (task.status === 'accomplished' && task.completed_at) {
+                            dateEl.textContent = 'Done: ' + fmtShort(task.completed_at);
+                        } else if (task.status === 'completed') {
+                            dateEl.textContent = 'Completed';
+                        } else {
+                            dateEl.textContent = 'Due: ' + fmtShort(task.target_date);
+                        }
+
+                        chip.appendChild(titleEl);
+                        chip.appendChild(dateEl);
+                        chipWrap.appendChild(chip);
+                    });
+
+                    if (deadlines.length > 2) {
+                        const more = document.createElement('p');
+                        more.className = 'text-gray-400 px-1 text-xs';
+                        more.textContent = '+' + (deadlines.length - 2) + ' more';
+                        chipWrap.appendChild(more);
+                    }
+
+                    cell.appendChild(chipWrap);
+                }
+
+                // ── Duration bars at the bottom for spanning tasks ──
+                if (spanning.length > 0) {
+                    const barsWrap = document.createElement('div');
+                    barsWrap.className = 'mt-auto flex flex-col';
+                    barsWrap.style.gap = '1px';
+
+                    const visibleBars = spanning.slice(0, 3);
+                    visibleBars.forEach(function (task) {
+                        const cfg        = statusConfig[task.status] || { color: '#9ca3af' };
+                        const isStartDay = task.start_date === dateStr;
+                        const isEndDay   = task.target_date === dateStr;
+
+                        const bar = document.createElement('div');
+                        bar.style.height          = '7px';
+                        bar.style.backgroundColor = cfg.color;
+                        bar.style.opacity         = '0.65';
+                        bar.style.marginLeft      = isStartDay ? '4px' : '0';
+                        bar.style.marginRight     = isEndDay   ? '4px' : '0';
+                        bar.style.borderRadius    = isStartDay && isEndDay ? '3px'
+                                                  : isStartDay             ? '3px 0 0 3px'
+                                                  : isEndDay               ? '0 3px 3px 0'
+                                                  : '0';
+                        bar.title = task.title + ' (' + (task.start_date ? fmtShort(task.start_date) + ' → ' : '') + fmtShort(task.target_date) + ')';
+                        barsWrap.appendChild(bar);
+                    });
+
+                    if (spanning.length > 3) {
+                        const more = document.createElement('span');
+                        more.className = 'text-gray-400 text-right pr-1 text-xs';
+                        more.textContent = '+' + (spanning.length - 3);
+                        barsWrap.appendChild(more);
+                    }
+
+                    cell.appendChild(barsWrap);
+                }
+
+                if (hasActivity) {
+                    cell.addEventListener('click', function () { showDetail(dateStr, allDay); });
+                }
+
+                grid.appendChild(cell);
+            }
+        }
+
+        function showDetail(dateStr, allDay) {
+            const panel      = document.getElementById('cal-detail');
+            const panelDate  = document.getElementById('cal-detail-date');
+            const panelTasks = document.getElementById('cal-detail-tasks');
+
+            panelDate.textContent = new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+
+            panelTasks.innerHTML = '';
+            allDay.forEach(function (task) {
+                const cfg = statusConfig[task.status] || { badge: 'bg-gray-100 text-gray-700 border-gray-200', label: task.status };
+
+                let dateRange;
+                if (task.status === 'accomplished' && task.completed_at) {
+                    const rangeStart = task.start_date ? fmtLong(task.start_date) + ' &rarr; ' : '';
+                    dateRange = rangeStart + 'Accomplished: ' + fmtLong(task.completed_at);
+                } else if (task.status === 'completed') {
+                    const rangeStart = task.start_date ? fmtLong(task.start_date) + ' &rarr; ' : '';
+                    dateRange = rangeStart + fmtLong(task.target_date) + ' <span class="text-green-600 font-medium">(Completed)</span>';
+                } else if (task.start_date && task.start_date !== task.target_date) {
+                    dateRange = fmtLong(task.start_date) + ' &rarr; ' + fmtLong(task.target_date);
+                } else {
+                    dateRange = 'Due: ' + fmtLong(task.target_date);
+                }
+
+                const typeTag = task.type === 'project'
+                    ? '<span class="shrink-0 text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded border border-purple-200 font-medium">Project Task</span>'
+                    : '';
+
+                const dueTag = (task.isDue && !isDone(task) && dateStr === todayStr())
+                    ? '<span class="shrink-0 text-xs px-1.5 py-0.5 bg-red-100 text-red-700 rounded border border-red-200 font-medium">Due today</span>'
+                    : '';
+
+                const sourceLabel = task.type === 'project' ? 'Project' : 'Campaign';
+
+                const row = document.createElement('a');
+                row.href = task.url || '#';
+                row.className = 'flex items-start justify-between p-2.5 bg-white rounded-lg border border-gray-200 gap-3 hover:bg-gray-50 transition cursor-pointer no-underline';
+                row.style.cssText = 'text-decoration:none;color:inherit;' + (task.type === 'project' ? 'border-left:3px solid #a855f7;' : '');
+                row.innerHTML =
+                    '<div class="flex-1 min-w-0">' +
+                        '<p class="text-sm font-medium text-gray-800 truncate">' + escHtml(task.title) + '</p>' +
+                        '<p class="text-xs text-gray-500 mt-0.5"><span class="font-medium">' + sourceLabel + ':</span> ' + escHtml(task.source || '') + '</p>' +
+                        '<p class="text-xs text-gray-400 mt-1">' + dateRange + '</p>' +
+                    '</div>' +
+                    '<div class="flex flex-col items-end gap-1 shrink-0">' +
+                        '<span class="text-xs px-2 py-0.5 rounded border ' + cfg.badge + '">' + cfg.label + '</span>' +
+                        typeTag +
+                        dueTag +
+                    '</div>';
+                panelTasks.appendChild(row);
+            });
+
+            panel.classList.remove('hidden');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        document.getElementById('cal-prev').addEventListener('click', function () {
+            viewMonth--;
+            if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+            renderCalendar();
+        });
+
+        document.getElementById('cal-next').addEventListener('click', function () {
+            viewMonth++;
+            if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+            renderCalendar();
+        });
+
+        document.getElementById('cal-detail-close').addEventListener('click', function () {
+            document.getElementById('cal-detail').classList.add('hidden');
+        });
+
+        renderCalendar();
+    }());
+    </script>
+
     {{-- Quick Actions --}}
     <section class="bg-linear-to-r from-primary to-secondary rounded-lg p-6 text-white">
         <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>

@@ -247,6 +247,7 @@ class CampaignController extends Controller
             'target_date' => 'sometimes|nullable|date',
             'completed_at' => 'sometimes|nullable|date',
             'status' => 'sometimes|required|in:planning,ongoing,on_hold,accomplished',
+            'campaign_project_id' => 'sometimes|nullable|exists:campaign_projects,id',
         ], [
             'title.required' => 'Task title is required.',
             'title.max' => 'Task title must not exceed 50 characters.',
@@ -285,6 +286,9 @@ class CampaignController extends Controller
         }
         if (array_key_exists('status', $validated)) {
             $updateData['status'] = $validated['status'];
+        }
+        if (array_key_exists('campaign_project_id', $validated)) {
+            $updateData['campaign_project_id'] = $validated['campaign_project_id'] ?: null;
         }
 
         if (! empty($updateData)) {
@@ -509,7 +513,7 @@ class CampaignController extends Controller
         $user = $request->user();
         $isMember = $campaign->members()->where('user_id', $user->id)->exists();
         if (! $isMember) {
-            return redirect()->route('user.campaign')->with('error', 'Unauthorized');
+            return redirect()->route('user.campaign')->with('error', 'You are not authorized to access that project.');
         }
 
         $tasks = $campaign->tasks()->where('campaign_project_id', $project->id)

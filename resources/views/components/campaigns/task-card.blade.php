@@ -128,6 +128,7 @@ $memberUserIds = $task->taskMembers->map(fn($tm) => $tm->campaignMember->user_id
                 data-task-status="{{ $task->status }}"
                 data-completed-at="{{ $task->completed_at }}"
                 data-campaign-id="{{ $campaign->id }}"
+                data-campaign-project-id="{{ $task->campaign_project_id ?? '' }}"
                 data-assigned-members="{{ json_encode($task->assignedMembers->pluck('id')->toArray()) }}">
                 <x-heroicon-o-pencil class="w-4 h-4" />
             </button>

@@ -54,7 +54,7 @@ $currentUser = auth()->user();
     @if ($campaigns->count() > 0)
     @foreach ($campaigns as $index => $campaign)
     @php $isActive = $index === 0; @endphp
-    <div data-campaign-panel="{{ $campaign->id }}" class="{{ !$isActive ? 'hidden' : '' }} space-y-6">
+    <div data-campaign-panel="{{ $campaign->id }}" data-campaign-projects="{{ json_encode($campaign->projects->map(fn($p) => ['id' => $p->id, 'title' => $p->title])->values()) }}" class="{{ !$isActive ? 'hidden' : '' }} space-y-6">
         {{-- Top Row: Projects and Members --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {{-- Projects Section --}}

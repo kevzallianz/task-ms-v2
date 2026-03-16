@@ -73,6 +73,41 @@ class UserController extends Controller
             ->where('target_date', '<', now())
             ->count();
 
+        // Calendar tasks — campaign tasks + project tasks assigned to the campaign
+        $calendarCampaignTasks = CampaignTask::whereIn('campaign_id', $userCampaigns)
+            ->whereNotNull('target_date')
+            ->select('id', 'title', 'status', 'start_date', 'target_date', 'completed_at', 'campaign_id')
+            ->with('campaign:id,name')
+            ->get()
+            ->map(fn ($task) => [
+                'type'         => 'campaign',
+                'title'        => $task->title,
+                'status'       => $task->status,
+                'start_date'   => $task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('Y-m-d') : null,
+                'target_date'  => \Carbon\Carbon::parse($task->target_date)->format('Y-m-d'),
+                'completed_at' => $task->completed_at ? \Carbon\Carbon::parse($task->completed_at)->format('Y-m-d') : null,
+                'source'       => $task->campaign?->name,
+                'url'          => route('user.campaign'),
+            ]);
+
+        $calendarProjectTasks = ProjectTask::whereIn('assigned_campaign_id', $userCampaigns)
+            ->whereNotNull('target_date')
+            ->select('id', 'title', 'status', 'start_date', 'target_date', 'project_id')
+            ->with('project:id,name')
+            ->get()
+            ->map(fn ($task) => [
+                'type'         => 'project',
+                'title'        => $task->title,
+                'status'       => $task->status,
+                'start_date'   => $task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('Y-m-d') : null,
+                'target_date'  => \Carbon\Carbon::parse($task->target_date)->format('Y-m-d'),
+                'completed_at' => null,
+                'source'       => $task->project?->name,
+                'url'          => $task->project_id ? route('projects.view', $task->project_id) : route('user.projects'),
+            ]);
+
+        $calendarTasks = $calendarCampaignTasks->concat($calendarProjectTasks);
+
         return view('user.overview', [
             'totalCampaigns' => $totalCampaigns,
             'totalProjects' => $totalProjects,
@@ -83,6 +118,7 @@ class UserController extends Controller
             'upcomingCampaignTasks' => $upcomingCampaignTasks,
             'recentProjects' => $recentProjects,
             'overdueCampaignTasks' => $overdueCampaignTasks,
+            'calendarTasks' => $calendarTasks,
         ]);
     }
     public function tasks()

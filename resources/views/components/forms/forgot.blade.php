@@ -35,7 +35,9 @@
                 btn.prop('disabled', false).text(originalText);
             },
             error: function(xhr) {
-                const message = (xhr.responseJSON && (xhr.responseJSON.message || (xhr.responseJSON.errors && Object.values(xhr.responseJSON.errors).flat().join(' ')))) || 'An error occurred. Please try again.';
+                const message = xhr.status === 429
+                    ? 'Too many attempts. Please wait a moment before trying again.'
+                    : (xhr.responseJSON && (xhr.responseJSON.message || (xhr.responseJSON.errors && Object.values(xhr.responseJSON.errors).flat().join(' ')))) || 'An error occurred. Please try again.';
                 showToast('error', message);
                 btn.prop('disabled', false).text(originalText);
             }

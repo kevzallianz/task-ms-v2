@@ -19,10 +19,46 @@ use Illuminate\Support\Facades\Mail;
 class ProjectController extends Controller
 {
     /**
+     * Get the current user's campaign ID.
+     */
+    private function getUserCampaignId(): ?int
+    {
+        return DB::table('campaign_members')
+            ->where('user_id', Auth::id())
+            ->value('campaign_id');
+    }
+
+    /**
+     * Check if the current user's campaign can access a project
+     * (either as the project's owner campaign or as a contributor).
+     */
+    private function canAccessProject(Project $project): bool
+    {
+        $campaignId = $this->getUserCampaignId();
+        if (! $campaignId) {
+            return false;
+        }
+
+        if ($project->campaign_id === $campaignId) {
+            return true;
+        }
+
+        return $project->contributors()->where('campaign_id', $campaignId)->exists();
+    }
+
+    /**
+     * Check if the current user's campaign owns the project.
+     */
+    private function ownsProject(Project $project): bool
+    {
+        $campaignId = $this->getUserCampaignId();
+        return $campaignId && $project->campaign_id === $campaignId;
+    }
+
+    /**
      * Get the current user's access level in a campaign.
      */
-
-    private function getUserAccessLevel()
+    private function getUserAccessLevel(): string
     {
         return request()->user()->campaignMember->access_level ?? 'viewer';
     }
@@ -64,13 +100,18 @@ class ProjectController extends Controller
             'status.in' => 'Invalid status selected',
         ]);
 
-        $campaign = DB::table('campaign_members')
-            ->where('user_id', Auth::id())
-            ->value('campaign_id');
+        $userCampaignId = $this->getUserCampaignId();
 
-        if (!$campaign) {
+        if (! $userCampaignId) {
             return response()->json([
                 'message' => 'You must be part of a campaign to create a project.',
+            ], 403);
+        }
+
+        // Prevent forging the campaign_id — user can only create projects for their own campaign
+        if ((int) $validated['campaign_id'] !== (int) $userCampaignId) {
+            return response()->json([
+                'message' => 'You can only create projects for your own campaign.',
             ], 403);
         }
 
@@ -108,6 +149,13 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
+        // Only the owning campaign can update project details
+        if (! $this->ownsProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to update this project.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:50',
             'description' => 'nullable|string',
@@ -162,6 +210,19 @@ class ProjectController extends Controller
      */
     public function view(Project $project)
     {
+        // Resolve the current user's campaign
+        $userCampaignId = DB::table('campaign_members')
+            ->where('user_id', Auth::id())
+            ->value('campaign_id');
+
+        // Allow access only if the user's campaign owns the project or is a contributor
+        $isOwner = $project->campaign_id === $userCampaignId;
+        $isContributor = $userCampaignId && $project->contributors()->where('campaign_id', $userCampaignId)->exists();
+
+        if (! $isOwner && ! $isContributor) {
+            return redirect()->route('user.projects')->with('error', 'You are not authorized to access that project.');
+        }
+
         // Eager load all relationships to avoid N+1 queries
         $project->load([
             'user',
@@ -206,6 +267,13 @@ class ProjectController extends Controller
     /* Add a campaign as contributor to a project. */
     public function addContributor(Request $request, Project $project)
     {
+        // Only the owning campaign can manage contributors
+        if (! $this->ownsProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to add contributors to this project.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'campaign_id' => 'required|exists:campaigns,id|unique:project_contributors,campaign_id,NULL,id,project_id,' . $project->id,
         ], [
@@ -262,6 +330,13 @@ class ProjectController extends Controller
     /* Remove a contributor from a project. */
     public function removeContributor(Project $project, ProjectContributor $contributor)
     {
+        // Only the owning campaign can manage contributors
+        if (! $this->ownsProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to remove contributors from this project.',
+            ], 403);
+        }
+
         try {
             if ($contributor->project_id !== $project->id) {
                 return response()->json([
@@ -287,11 +362,16 @@ class ProjectController extends Controller
      */
     public function addTask(Request $request, Project $project)
     {
-        // Check authorization - only project owner or users with editor/all access can add tasks
-        $isOwner = $project->user_id === Auth::id();
-        $accessLevel = $this->getUserAccessLevel();
+        // Ensure the user's campaign can access this project
+        if (! $this->canAccessProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to add tasks to this project.',
+            ], 403);
+        }
 
-        if (!$isOwner && !in_array($accessLevel, ['editor', 'all'])) {
+        // Require editor or all access level (viewers cannot add tasks)
+        $accessLevel = $this->getUserAccessLevel();
+        if (! in_array($accessLevel, ['editor', 'all'])) {
             return response()->json([
                 'message' => 'You do not have permission to add tasks to this project.',
             ], 403);
@@ -324,21 +404,24 @@ class ProjectController extends Controller
                 'status' => $validated['status'],
             ]);
 
+            /** @var Campaign|null $campaign */
             $campaign = Campaign::find($validated['assigned_campaign_id']);
 
             // Send email notifications to all campaign members
-            $campaignMembers = $campaign->campaignMembers;
+            if ($campaign) {
+                $campaignMembers = $campaign->campaignMembers;
 
-            foreach ($campaignMembers as $member) {
-                if ($member && $member->user && $member->user->email) {
-                    Mail::to($member->user->email)->send(new NewCampaignTask($campaign, $projectTask, $member->user));
+                foreach ($campaignMembers as $member) {
+                    if ($member && $member->user && $member->user->email) {
+                        Mail::to($member->user->email)->send(new NewCampaignTask($campaign, $projectTask, $member->user));
+                    }
                 }
             }
-
 
             return response()->json([
                 'message' => 'Task created successfully!',
             ], 201);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to create task. Please try again.',
@@ -358,11 +441,15 @@ class ProjectController extends Controller
             ], 404);
         }
 
-        // Check authorization - only project owner or users with editor/all access can edit tasks
-        $isOwner = $project->user_id === Auth::id();
-        $accessLevel = $this->getUserAccessLevel();
+        // Ensure the user's campaign can access this project
+        if (! $this->canAccessProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to edit tasks.',
+            ], 403);
+        }
 
-        if (!$isOwner && !in_array($accessLevel, ['editor', 'all'])) {
+        $accessLevel = $this->getUserAccessLevel();
+        if (! in_array($accessLevel, ['editor', 'all'])) {
             return response()->json([
                 'message' => 'You do not have permission to edit tasks.',
             ], 403);
@@ -430,11 +517,15 @@ class ProjectController extends Controller
             ], 404);
         }
 
-        // Check authorization - only project owner or users with editor/all access can update status
-        $isOwner = $project->user_id === Auth::id();
-        $accessLevel = $this->getUserAccessLevel();
+        // Ensure the user's campaign can access this project
+        if (! $this->canAccessProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to update task status.',
+            ], 403);
+        }
 
-        if (!$isOwner && !in_array($accessLevel, ['editor', 'all'])) {
+        $accessLevel = $this->getUserAccessLevel();
+        if (! in_array($accessLevel, ['editor', 'all'])) {
             return response()->json([
                 'message' => 'You do not have permission to update task status.',
             ], 403);
@@ -481,6 +572,12 @@ class ProjectController extends Controller
             ], 404);
         }
 
+        if (! $this->canAccessProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to view remarks for this project.',
+            ], 403);
+        }
+
         $remarks = $task->remarks()
             ->with('user')
             ->orderBy('created_at', 'desc')
@@ -502,10 +599,8 @@ class ProjectController extends Controller
             ], 404);
         }
 
-        // Check authorization - all campaign members (viewer, editor, all) can add remarks
-        $accessLevel = $this->getUserAccessLevel();
-
-        if (!in_array($accessLevel, ['viewer', 'editor', 'all'])) {
+        // Ensure the user's campaign can access this project
+        if (! $this->canAccessProject($project)) {
             return response()->json([
                 'message' => 'You do not have permission to add remarks.',
             ], 403);
@@ -552,6 +647,13 @@ class ProjectController extends Controller
      */
     public function updateStatus(Request $request, Project $project)
     {
+        // Only members of the owning or contributor campaign can update status
+        if (! $this->canAccessProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to update this project.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'status' => 'required|in:planning,in_progress,completed,on_hold',
         ], [
@@ -596,11 +698,15 @@ class ProjectController extends Controller
             ], 404);
         }
 
-        // Check authorization - only project owner or users with editor/all access can delete tasks
-        $isOwner = $project->user_id === Auth::id();
-        $accessLevel = $this->getUserAccessLevel();
+        // Ensure the user's campaign can access this project
+        if (! $this->canAccessProject($project)) {
+            return response()->json([
+                'message' => 'You do not have permission to delete tasks.',
+            ], 403);
+        }
 
-        if (!$isOwner && !in_array($accessLevel, ['editor', 'all'])) {
+        $accessLevel = $this->getUserAccessLevel();
+        if (! in_array($accessLevel, ['editor', 'all'])) {
             return response()->json([
                 'message' => 'You do not have permission to delete tasks.',
             ], 403);
@@ -617,7 +723,6 @@ class ProjectController extends Controller
 
             // Log activity
             $this->logActivity($project, 'task_deleted', 'Deleted task "' . $taskTitle . '"', [
-                'task_title' => $taskTitle,
             ]);
 
             return response()->json([

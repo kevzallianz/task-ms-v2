@@ -28,6 +28,14 @@
 
             toast.on('click', '.toast-close', () => toast.remove());
         }
+
+        // Display server-side flash messages as toasts
+        @if (session('error'))
+            $(document).ready(() => showToast('error', @json(session('error'))));
+        @endif
+        @if (session('success'))
+            $(document).ready(() => showToast('success', @json(session('success'))));
+        @endif
     </script>
 </body>
 

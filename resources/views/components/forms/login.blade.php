@@ -45,7 +45,9 @@
                 setTimeout(() => window.location.href = response.redirect, 800);
             },
             error: function(xhr) {
-                const message = (xhr.responseJSON.message || 'An error occurred. Please try again.');
+                const message = xhr.status === 429
+                    ? 'Too many login attempts. Please wait a moment before trying again.'
+                    : (xhr.responseJSON?.message || 'An error occurred. Please try again.');
                 $('#sign-in-btn').removeAttr('disabled').text('Sign in');
                 showToast('error', message);
             }

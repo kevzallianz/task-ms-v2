@@ -14,7 +14,7 @@
 
     <x-button id="register-btn" text="Create Account" class="w-full py-2.5 rounded-lg text-base font-medium" />
     <a href="{{ route('home') }}" class="text-secondary hover:underline text-sm text-center hover:text-primary">Already have an account? Sign in here</a>
-    
+
 </form>
 
 <script>
@@ -40,7 +40,9 @@
                 setTimeout(() => window.location.href = response.redirect, 800);
             },
             error: function(xhr) {
-                const message = (xhr.responseJSON.message || 'An error occurred. Please try again.');
+                const message = xhr.status === 429
+                    ? 'Too many registration attempts. Please wait a moment before trying again.'
+                    : (xhr.responseJSON?.message || 'An error occurred. Please try again.');
                 $('#register-btn').removeAttr('disabled').text('Create Account');
                 showToast('error', message);
             }

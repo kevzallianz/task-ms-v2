@@ -18,6 +18,7 @@ $(document).ready(function () {
     const $submitText = $('#submitEditCampaignTaskBtnText');
     const $spinner = $('#submitEditCampaignTaskBtnSpinner');
     const $accomplished = $('#editCampaignTaskAccomplishedDate');
+    const $projectSelect = $('#editCampaignTaskProject');
 
     let selectedMembers = [];
 
@@ -29,6 +30,7 @@ $(document).ready(function () {
         status: $('#editCampaignTaskStatusError'),
         description: $('#editCampaignTaskDescriptionError'),
         assigned_member_ids: $('#editCampaignTaskAssignedMembersError'),
+        campaign_project_id: $('#editCampaignTaskProjectError'),
     };
 
     function openModal(data) {
@@ -52,6 +54,7 @@ $(document).ready(function () {
         $titleLabel.text(data.title || 'Edit task');
         clearErrors();
         selectedMembers = [];
+        populateProjectSelect(data.campaign_id, data.campaign_project_id);
         populateMembersCheckboxes(data.campaign_id);
         
         // Load existing assigned members
@@ -84,6 +87,19 @@ $(document).ready(function () {
         $submitBtn.prop('disabled', isLoading);
         $submitText.text(isLoading ? 'Saving...' : 'Save Changes');
         isLoading ? $spinner.removeClass('hidden') : $spinner.addClass('hidden');
+    }
+
+    function populateProjectSelect(campaignId, selectedProjectId) {
+        $projectSelect.html('<option value="">\u2014 No Project \u2014</option>');
+        const $panel = $(`[data-campaign-panel="${campaignId}"]`);
+        let projects = $panel.data('campaign-projects');
+        if (!Array.isArray(projects)) {
+            try { projects = JSON.parse(projects); } catch(e) { projects = []; }
+        }
+        (projects || []).forEach(function(p) {
+            const selected = String(p.id) === String(selectedProjectId) ? 'selected' : '';
+            $projectSelect.append(`<option value="${p.id}" ${selected}>${escapeHtml(p.title)}</option>`);
+        });
     }
 
     function populateMembersCheckboxes(campaignId) {
@@ -188,6 +204,7 @@ $(document).ready(function () {
             target_date: $btn.data('task-target-date'),
             status: $btn.data('task-status'),
             completed_at: $btn.data('completed-at'),
+            campaign_project_id: $btn.data('campaign-project-id') || '',
             assigned_members: assignedMembers,
         });
     });
