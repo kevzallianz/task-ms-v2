@@ -40,7 +40,7 @@ $(document).ready(function () {
         $description.val(data.description || '');
         $start.val(data.start_date || '');
         $target.val(data.target_date || '');
-        
+
         // Format completed_at date if it exists
         if (data.completed_at) {
             const accomplishedDate = new Date(data.completed_at);
@@ -49,14 +49,14 @@ $(document).ready(function () {
         } else {
             $accomplished.val('');
         }
-        
+
         $status.val(data.status || 'planning');
         $titleLabel.text(data.title || 'Edit task');
         clearErrors();
         selectedMembers = [];
         populateProjectSelect(data.campaign_id, data.campaign_project_id);
         populateMembersCheckboxes(data.campaign_id);
-        
+
         // Load existing assigned members
         if (data.assigned_members && data.assigned_members.length > 0) {
             const $membersPanel = $(`[data-campaign-panel-members="${data.campaign_id}"]`);
@@ -68,7 +68,7 @@ $(document).ready(function () {
                 }
             });
         }
-        
+
         $modal.removeClass('hidden').addClass('flex');
     }
 
@@ -194,7 +194,7 @@ $(document).ready(function () {
         const $btn = $(this);
         const assignedMembersJson = $btn.data('assigned-members') || '[]';
         const assignedMembers = typeof assignedMembersJson === 'string' ? JSON.parse(assignedMembersJson) : assignedMembersJson;
-        
+
         openModal({
             id: $btn.data('task-id'),
             campaign_id: $btn.data('campaign-id'),

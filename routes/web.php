@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/campaigns/{campaign}/tasks/{task}/status', [CampaignController::class, 'updateTaskStatus'])->name('campaigns.tasks.update-status');
     Route::put('/campaigns/{campaign}/tasks/{task}', [CampaignController::class, 'updateTask'])->name('campaigns.tasks.update');
     Route::delete('/campaigns/{campaign}/tasks/{task}', [CampaignController::class, 'deleteTask'])->name('campaigns.tasks.delete');
+    Route::get('/campaigns/{campaign}/member-contributions', [CampaignController::class, 'getMemberContributions'])->name('campaigns.member-contributions');
 
     /* Super Admin Routes */
     Route::middleware('role:superadmin')->group(function () {

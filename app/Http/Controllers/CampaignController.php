@@ -808,4 +808,64 @@ class CampaignController extends Controller
             'member' => $campaignMember->load('user'),
         ]);
     }
+
+    /**
+     * Get member contributions (accomplished tasks and projects) for a campaign
+     */
+    public function getMemberContributions(Request $request, Campaign $campaign)
+    {
+        // Ensure user is a member of the campaign
+        $user = $request->user();
+        $isMember = $campaign->members()->where('user_id', $user->id)->exists();
+        if (! $isMember) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Get all campaign members with their contribution stats
+        $members = $campaign->campaignMembers()
+            ->with('user')
+            ->get()
+            ->map(function ($member) use ($campaign) {
+                // Count accomplished campaign tasks assigned to this member
+                $accomplishedTasks = CampaignTask::where('campaign_id', $campaign->id)
+                    ->where('status', 'accomplished')
+                    ->whereHas('assignedMembers', function ($query) use ($member) {
+                        $query->where('campaign_member_id', $member->id);
+                    })
+                    ->count();
+
+                // Count total tasks assigned to this member
+                $totalTasks = CampaignTask::where('campaign_id', $campaign->id)
+                    ->whereHas('assignedMembers', function ($query) use ($member) {
+                        $query->where('campaign_member_id', $member->id);
+                    })
+                    ->count();
+
+                // Count accomplished campaign projects this member contributed to
+                $accomplishedProjects = CampaignProject::where('campaign_id', $campaign->id)
+                    ->where('status', 'accomplished')
+                    ->count();
+
+                // Count total campaign projects
+                $totalProjects = CampaignProject::where('campaign_id', $campaign->id)->count();
+
+                return [
+                    'id' => $member->id,
+                    'name' => $member->user->name,
+                    'email' => $member->user->email,
+                    'avatar' => substr($member->user->name, 0, 1),
+                    'access_level' => $member->access_level,
+                    'accomplished_tasks' => $accomplishedTasks,
+                    'total_tasks' => $totalTasks,
+                    'accomplished_projects' => $accomplishedProjects,
+                    'total_projects' => $totalProjects,
+                ];
+            })
+            ->sortByDesc('accomplished_tasks');
+
+        return response()->json([
+            'success' => true,
+            'members' => $members->values(),
+        ]);
+    }
 }

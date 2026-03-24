@@ -162,11 +162,6 @@
             </tr>
         </table>
 
-        <!-- CTA -->
-        <a href="{{ route('user.projects') }}" class="cta">
-            View project
-        </a>
-
     </div>
 
     <!-- Footer -->

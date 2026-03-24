@@ -155,12 +155,6 @@
                     <td>{{ ucfirst(str_replace('_', ' ', $task->status)) }}</td>
                 </tr>
             </table>
-
-            <!-- CTA -->
-            <a href="{{ route('user.campaign') }}" class="cta">
-                View task
-            </a>
-
         </div>
 
         <!-- Footer -->

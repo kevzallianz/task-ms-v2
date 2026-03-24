@@ -43,6 +43,10 @@ $currentUser = auth()->user();
                 <x-heroicon-o-user-group class="w-4 h-4 text-white" />
                 Assign Members
             </button>
+            <button id="viewContributionsBtn" class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition">
+                <x-heroicon-o-chart-bar-square class="w-4 h-4 text-white" />
+                Contributions
+            </button>
             <!-- <button id="importBtn" class="cursor-pointer flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition">
                 <x-heroicon-c-paper-clip class="w-4 h-4 text-white" />
                 Import Tasks
@@ -243,6 +247,7 @@ $currentUser = auth()->user();
     <x-campaigns.delete-task-modal />
     <x-campaigns.member-access-modal />
     <x-campaigns.task-remarks-modal />
+    <x-campaigns.member-contributions-modal />
 
     <!-- Create Campaign Project Modal -->
     <div id="createProjectModal" class="fixed flex inset-0 bg-black/50 hidden items-center justify-center z-50 overflow-y-auto">
@@ -460,5 +465,26 @@ $currentUser = auth()->user();
                 }
             });
         });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // View Contributions button handler
+        const viewContributionsBtn = document.getElementById('viewContributionsBtn');
+
+        if (viewContributionsBtn) {
+            viewContributionsBtn.addEventListener('click', function() {
+                // Get the first active campaign ID
+                const activeCampaignPanel = document.querySelector('[data-campaign-panel]:not(.hidden)');
+                if (activeCampaignPanel) {
+                    const campaignId = activeCampaignPanel.getAttribute('data-campaign-panel');
+                    if (window.openMemberContributions) {
+                        window.openMemberContributions(campaignId);
+                    }
+                } else {
+                    showToast('info', 'Please select a campaign first');
+                }
+            });
+        }
     });
 </script>
