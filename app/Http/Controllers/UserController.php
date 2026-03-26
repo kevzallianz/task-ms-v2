@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\Campaign;
+use App\Models\CampaignProject;
 use App\Models\CampaignTask;
+use App\Models\Project;
 use App\Models\ProjectTask;
-use App\Models\CampaignTaskMember;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
@@ -26,9 +25,11 @@ class UserController extends Controller
         $totalCampaigns = $userCampaigns->count();
         $totalProjects = Project::whereIn('campaign_id', $userCampaigns)
             ->orWhere('user_id', $user->id)
-            ->count();
+            ->count()
+            + CampaignProject::whereIn('campaign_id', $userCampaigns)->count();
 
         $totalCampaignTasks = CampaignTask::whereIn('campaign_id', $userCampaigns)->count();
+
         $totalProjectTasks = ProjectTask::whereHas('project', function ($query) use ($userCampaigns, $user) {
             $query->whereIn('campaign_id', $userCampaigns)
                 ->orWhere('user_id', $user->id);
@@ -64,7 +65,19 @@ class UserController extends Controller
             ->with('campaign')
             ->latest('created_at')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(fn ($p) => tap($p, fn ($m) => $m->type = 'project'))
+            ->concat(
+                CampaignProject::whereIn('campaign_id', $userCampaigns)
+                    ->with('campaign')
+                    ->latest('created_at')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($p) => tap($p, fn ($m) => $m->type = 'campaign_project'))
+            )
+            ->sortByDesc('created_at')
+            ->take(5)
+            ->values();
 
         // Overdue Tasks
         $overdueCampaignTasks = CampaignTask::whereIn('campaign_id', $userCampaigns)
@@ -80,14 +93,14 @@ class UserController extends Controller
             ->with('campaign:id,name')
             ->get()
             ->map(fn ($task) => [
-                'type'         => 'campaign',
-                'title'        => $task->title,
-                'status'       => $task->status,
-                'start_date'   => $task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('Y-m-d') : null,
-                'target_date'  => \Carbon\Carbon::parse($task->target_date)->format('Y-m-d'),
+                'type' => 'campaign',
+                'title' => $task->title,
+                'status' => $task->status,
+                'start_date' => $task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('Y-m-d') : null,
+                'target_date' => \Carbon\Carbon::parse($task->target_date)->format('Y-m-d'),
                 'completed_at' => $task->completed_at ? \Carbon\Carbon::parse($task->completed_at)->format('Y-m-d') : null,
-                'source'       => $task->campaign?->name,
-                'url'          => route('user.campaign'),
+                'source' => $task->campaign?->name,
+                'url' => route('user.campaign'),
             ]);
 
         $calendarProjectTasks = ProjectTask::whereIn('assigned_campaign_id', $userCampaigns)
@@ -96,14 +109,14 @@ class UserController extends Controller
             ->with('project:id,name')
             ->get()
             ->map(fn ($task) => [
-                'type'         => 'project',
-                'title'        => $task->title,
-                'status'       => $task->status,
-                'start_date'   => $task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('Y-m-d') : null,
-                'target_date'  => \Carbon\Carbon::parse($task->target_date)->format('Y-m-d'),
+                'type' => 'project',
+                'title' => $task->title,
+                'status' => $task->status,
+                'start_date' => $task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('Y-m-d') : null,
+                'target_date' => \Carbon\Carbon::parse($task->target_date)->format('Y-m-d'),
                 'completed_at' => null,
-                'source'       => $task->project?->name,
-                'url'          => $task->project_id ? route('projects.view', $task->project_id) : route('user.projects'),
+                'source' => $task->project?->name,
+                'url' => $task->project_id ? route('projects.view', $task->project_id) : route('user.projects'),
             ]);
 
         $calendarTasks = $calendarCampaignTasks->concat($calendarProjectTasks);
@@ -121,10 +134,12 @@ class UserController extends Controller
             'calendarTasks' => $calendarTasks,
         ]);
     }
+
     public function tasks()
     {
         return view('user.tasks');
     }
+
     public function projects(Request $request)
     {
         $campaignId = DB::table('campaign_members')
