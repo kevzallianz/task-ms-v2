@@ -205,7 +205,8 @@
                 </div>
                 <div class="divide-y divide-gray-200">
                     @forelse($upcomingCampaignTasks as $task)
-                        <div class="p-4 hover:bg-gray-50 transition">
+                        <a href="{{ $task->campaign_project_id ? route('campaigns.projects.view', [$task->campaign_id, $task->campaign_project_id]) : route('user.campaign') }}"
+                            class="block p-4 hover:bg-gray-50 transition">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1 min-w-0">
                                     <h3 class="font-medium text-gray-900 truncate">{{ $task->title }}</h3>
@@ -250,7 +251,7 @@
                                     @endif
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     @empty
                         <div class="p-8 text-center">
                             <x-heroicon-o-calendar-days class="w-12 h-12 text-gray-300 mx-auto mb-2" />
@@ -273,13 +274,12 @@
                 </div>
                 <div class="divide-y divide-gray-200">
                     @forelse($recentProjects as $project)
-                        <div class="p-4 hover:bg-gray-50 transition">
+                        <a href="{{ $project->type === 'campaign_project' ? route('campaigns.projects.view', [$project->campaign_id, $project->id]) : route('projects.view', $project->id) }}"
+                            class="block p-4 hover:bg-gray-50 transition">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="font-medium text-gray-900 truncate">{{ $project->name }}</h3>
-                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                                        {{ $project->description ?? 'No description' }}
-                                    </p>
+                                    <h3 class="font-medium text-gray-900 truncate">{{ $project->name ?? $project->title ?? null }}</h3>
+                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $project->description ?? 'No description' }}</p>
                                     @if ($project->campaign)
                                         <p class="text-xs text-gray-500 mt-2">
                                             <span class="font-medium">Campaign:</span> {{ $project->campaign->name }}
@@ -304,7 +304,7 @@
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     @empty
                         <div class="p-8 text-center">
                             <x-heroicon-o-folder-open class="w-12 h-12 text-gray-300 mx-auto mb-2" />
