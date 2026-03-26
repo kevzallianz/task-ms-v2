@@ -102,11 +102,31 @@
                         <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
                             <div class="flex items-start gap-3">
                                 <x-heroicon-o-exclamation-triangle class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                                <div>
+                                <div class="flex-1 min-w-0">
                                     <p class="font-semibold text-red-800 text-sm">Overdue Tasks</p>
                                     <p class="text-sm text-red-700 mt-1">You have <span
                                             class="font-bold">{{ $overdueCampaignTasks }}</span> overdue campaign task(s)
                                     </p>
+                                    <ul class="mt-2 space-y-1">
+                                        @foreach ($overdueCampaignTasksList as $overdueTask)
+                                            <li>
+                                                <a href="{{ $overdueTask->project ? route('campaigns.projects.view', [$overdueTask->campaign_id, $overdueTask->campaign_project_id]) : route('user.campaign') }}"
+                                                    class="flex flex-col hover:bg-red-100 rounded p-2 transition">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="text-xs text-red-800 truncate font-medium">{{ $overdueTask->title }}</span>
+                                                        <span class="text-xs font-medium text-red-600 shrink-0">
+                                                            {{ \Carbon\Carbon::parse($overdueTask->target_date)->format('M d') }}
+                                                        </span>
+                                                    </div>
+                                                    @if ($overdueTask->project)
+                                                        <span class="text-xs text-red-500">{{ $overdueTask->project->title }}</span>
+                                                    @elseif ($overdueTask->campaign)
+                                                        <span class="text-xs text-red-500">{{ $overdueTask->campaign->name }}</span>
+                                                    @endif
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -116,10 +136,40 @@
                         <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <div class="flex items-start gap-3">
                                 <x-heroicon-o-clock class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                                <div>
+                                <div class="flex-1 min-w-0">
                                     <p class="font-semibold text-blue-800 text-sm">Upcoming Deadlines</p>
                                     <p class="text-sm text-blue-700 mt-1">{{ $upcomingCampaignTasks->count() }} task(s) due
                                         soon</p>
+                                    <ul class="mt-2 space-y-1">
+                                        @foreach ($upcomingCampaignTasks as $upcomingTask)
+                                            @php
+                                                $secs = now()->diffInSeconds($upcomingTask->target_date, false);
+                                                $days = $secs > 0 ? (int) ceil($secs / 86400) : 0;
+                                            @endphp
+                                            <li>
+                                                <a href="{{ $upcomingTask->project ? route('campaigns.projects.view', [$upcomingTask->campaign_id, $upcomingTask->campaign_project_id]) : route('user.campaign') }}"
+                                                    class="flex flex-col hover:bg-blue-100 rounded p-2 transition">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="text-xs text-blue-800 truncate font-medium">{{ $upcomingTask->title }}</span>
+                                                        <span class="text-xs font-medium text-blue-600 shrink-0">
+                                                            {{ \Carbon\Carbon::parse($upcomingTask->target_date)->format('M d') }}
+                                                            &middot;
+                                                            @if ($days >= 1)
+                                                                in {{ $days }}d
+                                                            @else
+                                                                today
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                    @if ($upcomingTask->project)
+                                                        <span class="text-xs text-blue-500">{{ $upcomingTask->project->title }}</span>
+                                                    @elseif ($upcomingTask->campaign)
+                                                        <span class="text-xs text-blue-500">{{ $upcomingTask->campaign->name }}</span>
+                                                    @endif
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             </div>
                         </div>

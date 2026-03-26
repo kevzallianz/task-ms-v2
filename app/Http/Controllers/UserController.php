@@ -55,7 +55,7 @@ class UserController extends Controller
             ->whereNotNull('target_date')
             ->where('target_date', '>=', now())
             ->orderBy('target_date', 'asc')
-            ->with(['campaign', 'taskMembers.campaignMember.user'])
+            ->with(['campaign', 'taskMembers.campaignMember.user', 'project'])
             ->limit(5)
             ->get();
 
@@ -80,11 +80,14 @@ class UserController extends Controller
             ->values();
 
         // Overdue Tasks
-        $overdueCampaignTasks = CampaignTask::whereIn('campaign_id', $userCampaigns)
+        $overdueCampaignTasksList = CampaignTask::whereIn('campaign_id', $userCampaigns)
             ->where('status', '!=', 'accomplished')
             ->whereNotNull('target_date')
             ->where('target_date', '<', now())
-            ->count();
+            ->with(['campaign:id,name', 'project:id,title'])
+            ->orderBy('target_date', 'asc')
+            ->get();
+        $overdueCampaignTasks = $overdueCampaignTasksList->count();
 
         // Calendar tasks — campaign tasks + project tasks assigned to the campaign
         $calendarCampaignTasks = CampaignTask::whereIn('campaign_id', $userCampaigns)
@@ -131,6 +134,7 @@ class UserController extends Controller
             'upcomingCampaignTasks' => $upcomingCampaignTasks,
             'recentProjects' => $recentProjects,
             'overdueCampaignTasks' => $overdueCampaignTasks,
+            'overdueCampaignTasksList' => $overdueCampaignTasksList,
             'calendarTasks' => $calendarTasks,
         ]);
     }
