@@ -269,7 +269,6 @@
                             <x-heroicon-o-folder class="w-5 h-5 text-primary" />
                             <h2 class="text-base font-semibold text-primary">Recent Projects</h2>
                         </div>
-                        <a href="{{ route('user.projects') }}" class="text-sm text-primary hover:underline">View All</a>
                     </div>
                 </div>
                 <div class="divide-y divide-gray-200">
