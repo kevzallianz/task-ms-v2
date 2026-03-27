@@ -257,31 +257,41 @@
                 @php
                     $tasks = $project->tasks ?? collect();
                     $totalTasks = $tasks->count();
-                    $completedTasks = $tasks->where('status', 'completed')->count();
-                    $pendingTasks = $totalTasks - $completedTasks;
-                    $progressPercent = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
+                    $pendingTasks = $tasks->where('status', 'pending')->count();
+                    $ongoingTasks = $tasks->where('status', 'ongoing')->count();
+                    $accomplishedTasks = $tasks->where('status', 'completed')->count();
                 @endphp
 
                 @if ($totalTasks > 0)
                 <div class="flex flex-col items-center">
                     <div class="w-full max-w-[200px] mb-4">
-                        <canvas id="projectStatsChart" data-completed="{{ $completedTasks }}" data-pending="{{ $pendingTasks }}"></canvas>
+                        <canvas id="projectStatsChart"
+                            data-pending="{{ $pendingTasks }}"
+                            data-ongoing="{{ $ongoingTasks }}"
+                            data-accomplished="{{ $accomplishedTasks }}"></canvas>
                     </div>
-                    
+
                     <div class="w-full space-y-2">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                                <span class="text-xs font-medium text-gray-600">Completed</span>
-                            </div>
-                            <span class="text-sm font-semibold text-green-600">{{ $completedTasks }}</span>
-                        </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
                                 <span class="text-xs font-medium text-gray-600">Pending</span>
                             </div>
                             <span class="text-sm font-semibold text-yellow-600">{{ $pendingTasks }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                                <span class="text-xs font-medium text-gray-600">Ongoing</span>
+                            </div>
+                            <span class="text-sm font-semibold text-blue-600">{{ $ongoingTasks }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-xs font-medium text-gray-600">Accomplished</span>
+                            </div>
+                            <span class="text-sm font-semibold text-green-600">{{ $accomplishedTasks }}</span>
                         </div>
                         <div class="flex items-center justify-between pt-2 border-t border-gray-200">
                             <span class="text-xs font-medium text-gray-600">Total</span>
@@ -402,24 +412,28 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('projectStatsChart');
-        
+
         if (ctx) {
-            const completedTasks = parseInt(ctx.dataset.completed) || 0;
             const pendingTasks = parseInt(ctx.dataset.pending) || 0;
-            
+            const ongoingTasks = parseInt(ctx.dataset.ongoing) || 0;
+            const accomplishedTasks = parseInt(ctx.dataset.accomplished) || 0;
+            const totalTasks = pendingTasks + ongoingTasks + accomplishedTasks;
+
             new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: ['Completed', 'Pending'],
+                    labels: ['Pending', 'Ongoing', 'Accomplished'],
                     datasets: [{
-                        data: [completedTasks, pendingTasks],
+                        data: [pendingTasks, ongoingTasks, accomplishedTasks],
                         backgroundColor: [
-                            'rgb(34, 197, 94)',  // green-500
                             'rgb(234, 179, 8)',   // yellow-500
+                            'rgb(59, 130, 246)',  // blue-500
+                            'rgb(34, 197, 94)',   // green-500
                         ],
                         borderColor: [
-                            'rgb(22, 163, 74)',  // green-600
                             'rgb(202, 138, 4)',   // yellow-600
+                            'rgb(37, 99, 235)',   // blue-600
+                            'rgb(22, 163, 74)',   // green-600
                         ],
                         borderWidth: 2
                     }]
@@ -436,8 +450,7 @@
                                 label: function(context) {
                                     const label = context.label || '';
                                     const value = context.parsed || 0;
-                                    const total = completedTasks + pendingTasks;
-                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    const percentage = totalTasks > 0 ? Math.round((value / totalTasks) * 100) : 0;
                                     return label + ': ' + value + ' (' + percentage + '%)';
                                 }
                             }
