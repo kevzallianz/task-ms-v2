@@ -19,25 +19,25 @@
 
             <div>
                 <label for="editProjectTitle" class="text-sm font-medium text-foreground">Title <span class="text-red-500">*</span></label>
-                <input 
-                    id="editProjectTitle" 
-                    type="text" 
-                    name="title" 
-                    required 
-                    maxlength="150" 
-                    placeholder="Project title" 
-                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1" 
+                <input
+                    id="editProjectTitle"
+                    type="text"
+                    name="title"
+                    required
+                    maxlength="150"
+                    placeholder="Project title"
+                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
                 />
                 <span class="text-xs text-red-500 hidden" id="editProjectTitleError"></span>
             </div>
 
             <div>
                 <label for="editProjectDescription" class="text-sm font-medium text-foreground">Description</label>
-                <textarea 
-                    id="editProjectDescription" 
-                    name="description" 
-                    rows="4" 
-                    placeholder="Optional project description" 
+                <textarea
+                    id="editProjectDescription"
+                    name="description"
+                    rows="4"
+                    placeholder="Optional project description"
                     class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none mt-1"
                 ></textarea>
                 <span class="text-xs text-red-500 hidden" id="editProjectDescriptionError"></span>
@@ -45,39 +45,56 @@
 
             <div>
                 <label for="editProjectStartDate" class="text-sm font-medium text-foreground">Start Date</label>
-                <input 
-                    id="editProjectStartDate" 
-                    type="date" 
-                    name="start_date" 
-                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1" 
+                <input
+                    id="editProjectStartDate"
+                    type="date"
+                    name="start_date"
+                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
                 />
                 <span class="text-xs text-red-500 hidden" id="editProjectStartDateError"></span>
             </div>
 
             <div>
                 <label for="editProjectTargetDate" class="text-sm font-medium text-foreground">Target Date</label>
-                <input 
-                    id="editProjectTargetDate" 
-                    type="date" 
-                    name="target_date" 
-                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1" 
+                <input
+                    id="editProjectTargetDate"
+                    type="date"
+                    name="target_date"
+                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
                 />
                 <span class="text-xs text-red-500 hidden" id="editProjectTargetDateError"></span>
             </div>
 
-            <div>
-                <label for="editProjectStatus" class="text-sm font-medium text-foreground">Status</label>
-                <select 
-                    id="editProjectStatus" 
-                    name="status" 
-                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
-                >
-                    <option value="planning">Planning</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="accomplished">Accomplished</option>
-                    <option value="on_hold">On Hold</option>
-                </select>
-                <span class="text-xs text-red-500 hidden" id="editProjectStatusError"></span>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="editProjectStatus" class="text-sm font-medium text-foreground">Status</label>
+                    <select
+                        id="editProjectStatus"
+                        name="status"
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
+                    >
+                        <option value="planning">Planning</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="accomplished">Accomplished</option>
+                        <option value="on_hold">On Hold</option>
+                    </select>
+                    <span class="text-xs text-red-500 hidden" id="editProjectStatusError"></span>
+                </div>
+
+                <div>
+                    <label for="editProjectPriority" class="text-sm font-medium text-foreground">Priority</label>
+                    <select
+                        id="editProjectPriority"
+                        name="priority"
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
+                    >
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="URGENT">Urgent</option>
+                    </select>
+                    <span class="text-xs text-red-500 hidden" id="editProjectPriorityError"></span>
+                </div>
             </div>
         </form>
 
@@ -111,19 +128,20 @@
         const startDateField = document.getElementById('editProjectStartDate');
         const targetDateField = document.getElementById('editProjectTargetDate');
         const statusField = document.getElementById('editProjectStatus');
+        const priorityField = document.getElementById('editProjectPriority');
 
         function openModal() {
             if (!modal) return;
-            
+
             // Get project data from the page
             const projectId = document.querySelector('[data-project-id]')?.getAttribute('data-project-id');
             const projectTitle = document.querySelector('main p.text-lg.font-semibold.text-primary')?.textContent?.trim() || '';
             const projectDescription = document.querySelector('main p.text-sm.text-gray-600.leading-relaxed')?.textContent?.trim() || '';
-            
+
             // Get dates from the page
             const startDateText = document.querySelectorAll('main span.text-sm.text-gray-600')[0]?.textContent?.trim();
             const targetDateText = document.querySelectorAll('main span.text-sm.text-gray-600')[1]?.textContent?.trim();
-            
+
             // Convert "M d, Y" to "Y-m-d" format for date input
             const formatDateForInput = (dateText) => {
                 if (!dateText || dateText === 'Not set') return '';
@@ -134,9 +152,12 @@
                     return '';
                 }
             };
-            
-            // Get status badge element
-            const statusBadge = document.querySelector('main span.inline-flex.items-center.gap-1.px-3.py-1');
+
+            // Get status and priority badge elements (first = status, second = priority)
+            const badges = document.querySelectorAll('main span.inline-flex.items-center.gap-1.px-3.py-1');
+            const statusBadge = badges[0];
+            const priorityBadge = badges[1];
+
             let projectStatus = 'planning';
             if (statusBadge) {
                 const statusClasses = statusBadge.className;
@@ -145,7 +166,16 @@
                 else if (statusClasses.includes('bg-green-100')) projectStatus = 'accomplished';
                 else if (statusClasses.includes('bg-red-100')) projectStatus = 'on_hold';
             }
-            
+
+            let projectPriority = 'LOW';
+            if (priorityBadge) {
+                const priorityClasses = priorityBadge.className;
+                if (priorityClasses.includes('bg-red-100')) projectPriority = 'URGENT';
+                else if (priorityClasses.includes('bg-orange-100')) projectPriority = 'HIGH';
+                else if (priorityClasses.includes('bg-blue-100')) projectPriority = 'MEDIUM';
+                else projectPriority = 'LOW';
+            }
+
             // Populate form fields
             if (projectIdField) projectIdField.value = projectId;
             if (titleField) titleField.value = projectTitle;
@@ -153,7 +183,8 @@
             if (startDateField) startDateField.value = formatDateForInput(startDateText);
             if (targetDateField) targetDateField.value = formatDateForInput(targetDateText);
             if (statusField) statusField.value = projectStatus;
-            
+            if (priorityField) priorityField.value = projectPriority;
+
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
@@ -162,7 +193,7 @@
             if (!modal) return;
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            
+
             // Clear error messages
             document.querySelectorAll('#editCampaignProjectForm .text-red-500').forEach(el => {
                 el.classList.add('hidden');

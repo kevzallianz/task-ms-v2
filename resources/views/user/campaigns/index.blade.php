@@ -72,11 +72,26 @@ $currentUser = auth()->user();
                         <span class="text-sm text-gray-500">{{ $campaign->projects->count() }} project(s)</span>
                     </div>
                     @if($campaign->projects->count() > 0)
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         @foreach($campaign->projects as $project)
                         <div class="bg-gray-50 border border-secondary/20 rounded-lg p-4 hover:border-primary/40 hover:shadow-sm transition-all">
                             <div class="flex flex-col h-full">
-                                <h4 class="text-base font-medium text-primary mb-2 truncate">{{ $project->title }}</h4>
+                                <div class="flex items-start justify-between gap-2 mb-2">
+                                    <h4 class="text-base font-medium text-primary truncate">{{ $project->title }}</h4>
+                                    @php
+                                    $projPriority = $project->priority ?? 'LOW';
+                                    $projPriorityClass = match($projPriority) {
+                                        'LOW'    => 'bg-gray-100 text-gray-700',
+                                        'MEDIUM' => 'bg-blue-100 text-blue-700',
+                                        'HIGH'   => 'bg-orange-100 text-orange-700',
+                                        'URGENT' => 'bg-red-100 text-red-700',
+                                        default  => 'bg-gray-100 text-gray-700',
+                                    };
+                                    @endphp
+                                    <span class="inline-flex items-center shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full {{ $projPriorityClass }}">
+                                        {{ ucfirst(strtolower($projPriority)) }}
+                                    </span>
+                                </div>
                                 <p class="text-sm text-gray-600 mb-3 line-clamp-2 grow">{{ $project->description ?? 'No description' }}</p>
                                 <div class="flex items-center justify-between pt-3 border-t border-secondary/10">
                                     <span class="text-xs text-gray-500">{{ $project->created_at?->format('M d, Y') }}</span>
@@ -211,6 +226,7 @@ $currentUser = auth()->user();
                             <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Status</th>
                             <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Start Date</th>
                             <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Target Date</th>
+                            <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Priority</th>
                             <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Completed At</th>
                             <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Members</th>
                             <th class="px-4 text-nowrap py-3 text-right font-semibold text-gray-700">Actions</th>
@@ -280,15 +296,28 @@ $currentUser = auth()->user();
                     <span class="text-xs text-red-500 hidden" id="projectDescriptionError"></span>
                 </div>
 
-                <div>
-                    <label for="projectStatus" class="text-sm font-medium text-foreground">Status</label>
-                    <select id="projectStatus" name="status" class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
-                        <option value="planning" selected>Planning</option>
-                        <option value="ongoing">Ongoing</option>
-                        <option value="on_hold">On Hold</option>
-                        <option value="accomplished">Accomplished</option>
-                    </select>
-                    <span class="text-xs text-red-500 hidden" id="projectStatusError"></span>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="projectStatus" class="text-sm font-medium text-foreground">Status</label>
+                        <select id="projectStatus" name="status" class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
+                            <option value="planning" selected>Planning</option>
+                            <option value="ongoing">Ongoing</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="accomplished">Accomplished</option>
+                        </select>
+                        <span class="text-xs text-red-500 hidden" id="projectStatusError"></span>
+                    </div>
+
+                    <div>
+                        <label for="projectPriority" class="text-sm font-medium text-foreground">Priority</label>
+                        <select id="projectPriority" name="priority" class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
+                            <option value="LOW" selected>Low</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="URGENT">Urgent</option>
+                        </select>
+                        <span class="text-xs text-red-500 hidden" id="projectPriorityError"></span>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">

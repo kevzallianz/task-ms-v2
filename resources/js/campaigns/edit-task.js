@@ -9,6 +9,7 @@ $(document).ready(function () {
     const $start = $('#editCampaignTaskStartDate');
     const $target = $('#editCampaignTaskTargetDate');
     const $status = $('#editCampaignTaskStatus');
+    const $priority = $('#editCampaignTaskPriority');
     const $titleLabel = $('#editCampaignTaskTitle');
     const $membersContainer = $('#editCampaignTaskAssignedMembers');
     const $selectedBadges = $('#editSelectedMemberBadges');
@@ -51,6 +52,7 @@ $(document).ready(function () {
         }
 
         $status.val(data.status || 'planning');
+        if ($priority.length) $priority.val(data.priority || 'LOW');
         $titleLabel.text(data.title || 'Edit task');
         clearErrors();
         selectedMembers = [];
@@ -203,6 +205,7 @@ $(document).ready(function () {
             start_date: $btn.data('task-start-date'),
             target_date: $btn.data('task-target-date'),
             status: $btn.data('task-status'),
+            priority: $btn.data('task-priority') || 'LOW',
             completed_at: $btn.data('completed-at'),
             campaign_project_id: $btn.data('campaign-project-id') || '',
             assigned_members: assignedMembers,

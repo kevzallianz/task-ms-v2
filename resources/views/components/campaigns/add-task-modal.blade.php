@@ -74,8 +74,8 @@
                     <span class="text-xs text-red-500 hidden" id="taskAssignedMemberIdsError"></span>
                 </div>
 
-                {{-- Status --}}
-                <div class="col-span-2">
+                {{-- Status & Priority --}}
+                <div>
                     <label for="taskStatus" class="text-sm font-medium text-foreground">Status <span class="text-red-500">*</span></label>
                     <select
                         id="taskStatus"
@@ -87,6 +87,20 @@
                         <option value="accomplished">Accomplished</option>
                     </select>
                     <span class="text-xs text-red-500 hidden" id="taskStatusError"></span>
+                </div>
+
+                <div>
+                    <label for="taskPriority" class="text-sm font-medium text-foreground">Priority</label>
+                    <select
+                        id="taskPriority"
+                        name="priority"
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
+                        <option value="LOW" selected>Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="URGENT">Urgent</option>
+                    </select>
+                    <span class="text-xs text-red-500 hidden" id="taskPriorityError"></span>
                 </div>
 
                 {{-- Description --}}

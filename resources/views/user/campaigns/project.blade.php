@@ -68,7 +68,25 @@ $userAccessLevel = request()->user()->campaignMember->access_level ?? 'viewer';
                 </div>
 
                 <div>
-                    <h3 class="text-sm font-medium text-foreground mb-2">Created</h3>
+                    <h3 class="text-sm font-medium text-foreground mb-2">Priority Level</h3>
+                    @php
+                    $priority = $project->priority ?? 'LOW';
+                    $priorityClass = match($priority) {
+                        'LOW'    => 'bg-gray-100 text-gray-700',
+                        'MEDIUM' => 'bg-blue-100 text-blue-700',
+                        'HIGH'   => 'bg-orange-100 text-orange-700',
+                        'URGENT' => 'bg-red-100 text-red-700',
+                        default  => 'bg-gray-100 text-gray-700',
+                    };
+                    @endphp
+                    <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full {{ $priorityClass }}">
+                        <x-heroicon-o-signal class="w-3 h-3" />
+                        {{ ucfirst(strtolower($priority)) }}
+                    </span>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-medium text-foreground mb-2"></h3>Created</h3>
                     <div class="flex items-center gap-2">
                         <x-heroicon-o-clock class="w-4 h-4 text-gray-400" />
                         <span class="text-sm text-gray-600">{{ $project->created_at ? date('M d, Y', strtotime($project->created_at)) : 'Unknown' }}</span>
@@ -279,6 +297,7 @@ $userAccessLevel = request()->user()->campaignMember->access_level ?? 'viewer';
                         <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Status</th>
                         <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Start Date</th>
                         <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Target Date</th>
+                        <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Priority</th>
                         <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Completed At</th>
                         <th class="px-4 text-nowrap py-3 text-left font-semibold text-gray-700">Members</th>
                         <th class="px-4 text-nowrap py-3 text-right font-semibold text-gray-700">Actions</th>

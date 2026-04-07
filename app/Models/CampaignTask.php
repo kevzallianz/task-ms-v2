@@ -17,6 +17,7 @@ class CampaignTask extends Model
         'start_date',
         'target_date',
         'status',
+        'priority',
         'completed_at',
     ];
 

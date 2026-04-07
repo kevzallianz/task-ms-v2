@@ -21,25 +21,25 @@
 
             <div>
                 <label for="editProjectTaskTitle" class="text-sm font-medium text-foreground">Title <span class="text-red-500">*</span></label>
-                <input 
-                    id="editProjectTaskTitle" 
-                    type="text" 
-                    name="title" 
-                    required 
-                    maxlength="100" 
-                    placeholder="Task title" 
-                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1" 
+                <input
+                    id="editProjectTaskTitle"
+                    type="text"
+                    name="title"
+                    required
+                    maxlength="100"
+                    placeholder="Task title"
+                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
                 />
                 <span class="text-xs text-red-500 hidden" id="editProjectTaskTitleError"></span>
             </div>
 
             <div>
                 <label for="editProjectTaskDescription" class="text-sm font-medium text-foreground">Description</label>
-                <textarea 
-                    id="editProjectTaskDescription" 
-                    name="description" 
-                    rows="3" 
-                    placeholder="Optional task description" 
+                <textarea
+                    id="editProjectTaskDescription"
+                    name="description"
+                    rows="3"
+                    placeholder="Optional task description"
                     class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 resize-none mt-1"
                 ></textarea>
                 <span class="text-xs text-red-500 hidden" id="editProjectTaskDescriptionError"></span>
@@ -48,41 +48,58 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label for="editProjectTaskStartDate" class="text-sm font-medium text-foreground">Start Date</label>
-                    <input 
-                        id="editProjectTaskStartDate" 
-                        type="date" 
-                        name="start_date" 
-                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1" 
+                    <input
+                        id="editProjectTaskStartDate"
+                        type="date"
+                        name="start_date"
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
                     />
                     <span class="text-xs text-red-500 hidden" id="editProjectTaskStartDateError"></span>
                 </div>
 
                 <div>
                     <label for="editProjectTaskTargetDate" class="text-sm font-medium text-foreground">Target Date</label>
-                    <input 
-                        id="editProjectTaskTargetDate" 
-                        type="date" 
-                        name="target_date" 
-                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1" 
+                    <input
+                        id="editProjectTaskTargetDate"
+                        type="date"
+                        name="target_date"
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
                     />
                     <span class="text-xs text-red-500 hidden" id="editProjectTaskTargetDateError"></span>
                 </div>
             </div>
 
-            <div>
-                <label for="editProjectTaskStatus" class="text-sm font-medium text-foreground">Status <span class="text-red-500">*</span></label>
-                <select 
-                    id="editProjectTaskStatus" 
-                    name="status" 
-                    required 
-                    class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
-                >
-                    <option value="planning">Planning</option>
-                    <option value="ongoing">Ongoing</option>
-                    <option value="accomplished">Accomplished</option>
-                    <option value="on_hold">On Hold</option>
-                </select>
-                <span class="text-xs text-red-500 hidden" id="editProjectTaskStatusError"></span>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="editProjectTaskStatus" class="text-sm font-medium text-foreground">Status <span class="text-red-500">*</span></label>
+                    <select
+                        id="editProjectTaskStatus"
+                        name="status"
+                        required
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
+                    >
+                        <option value="planning">Planning</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="accomplished">Accomplished</option>
+                        <option value="on_hold">On Hold</option>
+                    </select>
+                    <span class="text-xs text-red-500 hidden" id="editProjectTaskStatusError"></span>
+                </div>
+
+                <div>
+                    <label for="editProjectTaskPriority" class="text-sm font-medium text-foreground">Priority</label>
+                    <select
+                        id="editProjectTaskPriority"
+                        name="priority"
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 mt-1"
+                    >
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="URGENT">Urgent</option>
+                    </select>
+                    <span class="text-xs text-red-500 hidden" id="editProjectTaskPriorityError"></span>
+                </div>
             </div>
 
             {{-- Assigned Members --}}
@@ -99,8 +116,8 @@
                     <div class="text-xs text-gray-600 mb-1">Click to add/remove:</div>
                     <div id="editProjectTaskAssignedMembers" class="space-y-3 max-h-48 overflow-y-auto border border-secondary/30 rounded-lg p-3 bg-gray-50">
                         @foreach ($campaign->members as $member)
-                        <div class="editProjectTaskMemberItem flex items-center justify-between p-2 rounded-lg hover:bg-white cursor-pointer transition" 
-                             data-member-id="{{ $member->pivot->id }}" 
+                        <div class="editProjectTaskMemberItem flex items-center justify-between p-2 rounded-lg hover:bg-white cursor-pointer transition"
+                             data-member-id="{{ $member->pivot->id }}"
                              data-member-name="{{ $member->name }}">
                             <div class="flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">

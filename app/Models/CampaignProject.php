@@ -12,6 +12,7 @@ class CampaignProject extends Model
         'description',
         'start_date',
         'target_date',
+        'priority',
         'status',
     ];
 

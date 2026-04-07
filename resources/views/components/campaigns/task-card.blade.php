@@ -75,6 +75,23 @@ $memberUserIds = $task->taskMembers->map(fn($tm) => $tm->campaignMember->user_id
         @endif
     </td>
 
+    {{-- Priority --}}
+    <td class="px-4 py-3">
+        @php
+        $taskPriority = $task->priority ?? 'LOW';
+        $taskPriorityClass = match($taskPriority) {
+            'LOW'    => 'bg-gray-100 text-gray-700',
+            'MEDIUM' => 'bg-blue-100 text-blue-700',
+            'HIGH'   => 'bg-orange-100 text-orange-700',
+            'URGENT' => 'bg-red-100 text-red-700',
+            default  => 'bg-gray-100 text-gray-700',
+        };
+        @endphp
+        <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $taskPriorityClass }}">
+            {{ ucfirst(strtolower($taskPriority)) }}
+        </span>
+    </td>
+
     {{-- Completed At --}}
     <td class="px-4 py-3">
         @if ($task->completed_at)
@@ -126,6 +143,7 @@ $memberUserIds = $task->taskMembers->map(fn($tm) => $tm->campaignMember->user_id
                 data-task-start-date="{{ $task->start_date }}"
                 data-task-target-date="{{ $task->target_date }}"
                 data-task-status="{{ $task->status }}"
+                data-task-priority="{{ $task->priority ?? 'LOW' }}"
                 data-completed-at="{{ $task->completed_at }}"
                 data-campaign-id="{{ $campaign->id }}"
                 data-campaign-project-id="{{ $task->campaign_project_id ?? '' }}"

@@ -13,9 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateEditMemberUI() {
         const badgesContainer = document.getElementById('editProjectTaskSelectedMemberBadges');
         const noSelectionText = document.getElementById('editProjectTaskNoSelectionText');
-        
+
         badgesContainer.innerHTML = '';
-        
+
         if (editSelectedMemberIds.size === 0) {
             noSelectionText.classList.remove('hidden');
             badgesContainer.appendChild(noSelectionText);
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateEditMemberUI();
         }
     });
-    
+
     document.addEventListener('click', function (e) {
         const editBtn = e.target.closest('.campaignTaskEditBtn');
         if (editBtn) {
@@ -84,8 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const startDate = editBtn.getAttribute('data-task-start-date') || '';
             const targetDate = editBtn.getAttribute('data-task-target-date') || '';
             const status = editBtn.getAttribute('data-task-status');
+            const priority = editBtn.getAttribute('data-task-priority') || 'LOW';
             const assignedMembersStr = editBtn.getAttribute('data-assigned-members') || '[]';
-            
+
             let assignedMembers = [];
             try {
                 assignedMembers = JSON.parse(assignedMembersStr);
@@ -99,6 +100,8 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('editProjectTaskStartDate').value = startDate;
             document.getElementById('editProjectTaskTargetDate').value = targetDate;
             document.getElementById('editProjectTaskStatus').value = status;
+            const priorityField = document.getElementById('editProjectTaskPriority');
+            if (priorityField) priorityField.value = priority;
 
             // Set assigned members
             editSelectedMemberIds.clear();

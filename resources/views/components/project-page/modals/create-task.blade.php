@@ -16,7 +16,6 @@
         {{-- Modal Body --}}
         <form id="addTaskForm" method="POST" action="{{ route('user.campaign.project.tasks.store', ['campaign' => $campaign->id, 'project' => $project->id]) }}" class="p-6 space-y-5">
             @csrf
-            <input type="hidden" name="status" value="planning" />
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2">
@@ -66,6 +65,26 @@
 
                     {{-- Hidden inputs container for selected members --}}
                     <div id="assignedMemberInputs" class="hidden"></div>
+                </div>
+
+                <div>
+                    <label for="taskStatus" class="text-sm font-medium text-foreground">Status</label>
+                    <select id="taskStatus" name="status" class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
+                        <option value="planning" selected>Planning</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="on_hold">On Hold</option>
+                        <option value="accomplished">Accomplished</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="taskPriority" class="text-sm font-medium text-foreground">Priority</label>
+                    <select id="taskPriority" name="priority" class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
+                        <option value="LOW" selected>Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="URGENT">Urgent</option>
+                    </select>
                 </div>
 
                 <div class="col-span-2">

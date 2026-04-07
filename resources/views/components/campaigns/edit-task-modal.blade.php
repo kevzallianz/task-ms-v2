@@ -55,7 +55,7 @@
                     <span class="text-xs text-red-500 hidden" id="editCampaignTaskProjectError"></span>
                 </div>
 
-                <div class="col-span-2 w-full">
+                <div>
                     <label for="editCampaignTaskStatus" class="text-sm font-medium text-foreground">Status</label>
                     <select id="editCampaignTaskStatus" name="status" required
                         class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
@@ -65,6 +65,18 @@
                         <option value="accomplished">Accomplished</option>
                     </select>
                     <span class="text-xs text-red-500 hidden" id="editCampaignTaskStatusError"></span>
+                </div>
+
+                <div>
+                    <label for="editCampaignTaskPriority" class="text-sm font-medium text-foreground">Priority</label>
+                    <select id="editCampaignTaskPriority" name="priority"
+                        class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="URGENT">Urgent</option>
+                    </select>
+                    <span class="text-xs text-red-500 hidden" id="editCampaignTaskPriorityError"></span>
                 </div>
 
                 <div class="col-span-2">

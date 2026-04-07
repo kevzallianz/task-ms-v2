@@ -196,6 +196,7 @@ class CampaignController extends Controller
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
             'status' => 'required|in:planning,ongoing,on_hold,accomplished',
+            'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 
         // Check if user is a member of this campaign
@@ -212,6 +213,7 @@ class CampaignController extends Controller
             'description' => $validated['description'] ?? null,
             'start_date' => $validated['start_date'] ?? null,
             'target_date' => $validated['target_date'] ?? null,
+            'priority' => $validated['priority'] ?? 'LOW',
             'status' => $validated['status'],
         ]);
 
@@ -247,12 +249,15 @@ class CampaignController extends Controller
             'target_date' => 'sometimes|nullable|date',
             'completed_at' => 'sometimes|nullable|date',
             'status' => 'sometimes|required|in:planning,ongoing,on_hold,accomplished',
+            'priority' => 'sometimes|nullable|in:LOW,MEDIUM,HIGH,URGENT',
             'campaign_project_id' => 'sometimes|nullable|exists:campaign_projects,id',
         ], [
             'title.required' => 'Task title is required.',
             'title.max' => 'Task title must not exceed 50 characters.',
             'status.required' => 'Please select a status.',
             'status.in' => 'Invalid status selected.',
+            'priority.in' => 'Invalid priority selected.',
+            'campaign_project_id.exists' => 'Selected project not found.',
         ]);
 
         // Ensure task belongs to this campaign
@@ -271,6 +276,9 @@ class CampaignController extends Controller
         $updateData = [];
         if (array_key_exists('title', $validated)) {
             $updateData['title'] = $validated['title'];
+        }
+        if (array_key_exists('priority', $validated)) {
+            $updateData['priority'] = $validated['priority'];
         }
         if (array_key_exists('description', $validated)) {
             $updateData['description'] = $validated['description'];
@@ -463,6 +471,7 @@ class CampaignController extends Controller
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
             'status' => 'nullable|in:planning,ongoing,on_hold,accomplished',
+            'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 
         // Ensure requester is a member of the campaign
@@ -479,6 +488,7 @@ class CampaignController extends Controller
             'start_date' => $validated['start_date'] ?? null,
             'target_date' => $validated['target_date'] ?? null,
             'status' => $validated['status'] ?? 'planning',
+            'priority' => $validated['priority'] ?? 'LOW',
         ]);
 
         // Log activity
@@ -552,11 +562,13 @@ class CampaignController extends Controller
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
             'status' => 'required|in:planning,ongoing,on_hold,accomplished',
+            'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 
         // Ensure user is a member of the campaign
         $user = $request->user();
         $isMember = $campaign->members()->where('user_id', $user->id)->exists();
+
         if (! $isMember) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -569,6 +581,7 @@ class CampaignController extends Controller
             'start_date' => $validated['start_date'] ?? null,
             'target_date' => $validated['target_date'] ?? null,
             'status' => $validated['status'],
+            'priority' => $validated['priority'] ?? 'LOW',
         ]);
 
         // Attach campaign members if provided
@@ -665,6 +678,7 @@ class CampaignController extends Controller
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
             'status' => 'nullable|in:planning,ongoing,on_hold,accomplished',
+            'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 
         // Ensure user is a member of the campaign
@@ -691,6 +705,7 @@ class CampaignController extends Controller
             'start_date' => $validated['start_date'] ?? null,
             'target_date' => $validated['target_date'] ?? null,
             'status' => $validated['status'] ?? $project->status,
+            'priority' => $validated['priority'] ?? $project->priority,
         ]);
 
         // Log activity if there were changes
