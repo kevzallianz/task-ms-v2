@@ -39,10 +39,6 @@ $currentUser = auth()->user();
                 <x-heroicon-o-folder-plus class="w-4 h-4 text-white" />
                 Create Project
             </button>
-            <button id="bulkAssignBtn" class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-secondary rounded-lg hover:bg-secondary/90 transition">
-                <x-heroicon-o-user-group class="w-4 h-4 text-white" />
-                Assign Members
-            </button>
             <button id="viewContributionsBtn" class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 transition">
                 <x-heroicon-o-chart-bar-square class="w-4 h-4 text-white" />
                 Contributions
