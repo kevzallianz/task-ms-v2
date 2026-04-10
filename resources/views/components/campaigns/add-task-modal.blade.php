@@ -82,6 +82,7 @@
                         name="status"
                         class="w-full rounded-lg border border-secondary/30 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20">
                         <option value="planning" selected>Planning</option>
+                        <option value="for_approval">For Approval</option>
                         <option value="ongoing">Ongoing</option>
                         <option value="on_hold">On Hold</option>
                         <option value="accomplished">Accomplished</option>

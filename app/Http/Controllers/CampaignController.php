@@ -38,8 +38,16 @@ class CampaignController extends Controller
                 $query->where('status', $status);
             }
 
+            // Apply member filter if provided
+            if ($memberId = request()->get('campaign_'.$campaign->id.'_member')) {
+                $query->whereHas('taskMembers', function ($q) use ($memberId) {
+                    $q->where('campaign_member_id', $memberId);
+                });
+            }
+
             $campaign->allTasks = $query->orderByDesc('created_at')->get();
             $campaign->filterStatus = request()->get('campaign_'.$campaign->id.'_status');
+            $campaign->filterMember = request()->get('campaign_'.$campaign->id.'_member');
         }
 
         return view('user.campaigns.index', [
@@ -61,7 +69,7 @@ class CampaignController extends Controller
             'tasks.*.assigned_members.*' => 'nullable|string',
             'tasks.*.start_date' => 'nullable|date',
             'tasks.*.target_date' => 'nullable|date',
-            'tasks.*.status' => 'required|in:planning,ongoing,on_hold,accomplished',
+            'tasks.*.status' => 'required|in:planning,for_approval,ongoing,on_hold,accomplished',
             'tasks.*.completed_at' => 'nullable|date',
         ]);
 
@@ -195,7 +203,7 @@ class CampaignController extends Controller
             'assigned_member_ids.*' => 'exists:campaign_members,id',
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
-            'status' => 'required|in:planning,ongoing,on_hold,accomplished',
+            'status' => 'required|in:planning,for_approval,ongoing,on_hold,accomplished',
             'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 
@@ -248,7 +256,7 @@ class CampaignController extends Controller
             'start_date' => 'sometimes|nullable|date',
             'target_date' => 'sometimes|nullable|date',
             'completed_at' => 'sometimes|nullable|date',
-            'status' => 'sometimes|required|in:planning,ongoing,on_hold,accomplished',
+            'status' => 'sometimes|required|in:planning,for_approval,ongoing,on_hold,accomplished',
             'priority' => 'sometimes|nullable|in:LOW,MEDIUM,HIGH,URGENT',
             'campaign_project_id' => 'sometimes|nullable|exists:campaign_projects,id',
         ], [
@@ -335,7 +343,7 @@ class CampaignController extends Controller
     public function updateTaskStatus(Request $request, Campaign $campaign, CampaignTask $task)
     {
         $validated = $request->validate([
-            'status' => 'required|in:planning,ongoing,on_hold,accomplished',
+            'status' => 'required|in:planning,for_approval,ongoing,on_hold,accomplished',
         ], [
             'status.required' => 'Please select a status.',
             'status.in' => 'Invalid status selected.',
@@ -470,7 +478,7 @@ class CampaignController extends Controller
             'description' => 'nullable|string',
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
-            'status' => 'nullable|in:planning,ongoing,on_hold,accomplished',
+            'status' => 'nullable|in:planning,for_approval,ongoing,on_hold,accomplished',
             'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 
@@ -561,7 +569,7 @@ class CampaignController extends Controller
             'assigned_member_ids.*' => 'exists:campaign_members,id',
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
-            'status' => 'required|in:planning,ongoing,on_hold,accomplished',
+            'status' => 'required|in:planning,for_approval,ongoing,on_hold,accomplished',
             'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 
@@ -625,7 +633,7 @@ class CampaignController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|in:planning,ongoing,on_hold,accomplished',
+            'status' => 'required|in:planning,for_approval,ongoing,on_hold,accomplished',
         ], [
             'status.required' => 'Please select a status.',
             'status.in' => 'Invalid status selected.',
@@ -677,7 +685,7 @@ class CampaignController extends Controller
             'description' => 'nullable|string',
             'start_date' => 'nullable|date',
             'target_date' => 'nullable|date',
-            'status' => 'nullable|in:planning,ongoing,on_hold,accomplished',
+            'status' => 'nullable|in:planning,for_approval,ongoing,on_hold,accomplished',
             'priority' => 'nullable|in:LOW,MEDIUM,HIGH,URGENT',
         ]);
 

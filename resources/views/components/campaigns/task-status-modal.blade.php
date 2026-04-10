@@ -35,6 +35,13 @@
                         </div>
                     </label>
                     <label class="flex items-center gap-3 p-3 border border-secondary/30 rounded-lg hover:border-primary/70 transition">
+                        <input type="radio" name="status" value="for_approval" class="text-primary focus:ring-primary" />
+                        <div class="text-sm">
+                            <div class="font-medium text-foreground">For Approval</div>
+                            <p class="text-xs text-gray-500">Awaiting review or approval.</p>
+                        </div>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-secondary/30 rounded-lg hover:border-primary/70 transition">
                         <input type="radio" name="status" value="ongoing" class="text-primary focus:ring-primary" />
                         <div class="text-sm">
                             <div class="font-medium text-foreground">Ongoing</div>
