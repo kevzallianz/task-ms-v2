@@ -20,9 +20,7 @@
     </td>
     <td class="px-4 py-3 align-top">
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-primary/15 text-primary flex items-center justify-center text-sm font-semibold">
-                {{ strtoupper(substr($user->name ?? $user->email, 0, 1)) }}
-            </div>
+            <x-user-avatar :user="$user" class="w-9 h-9 text-sm" />
             <div>
                 <p class="text-sm font-semibold text-foreground">{{ $user->name ?? 'Unnamed' }}</p>
                 <p class="text-xs text-gray-600">{{ $user->email }}</p>

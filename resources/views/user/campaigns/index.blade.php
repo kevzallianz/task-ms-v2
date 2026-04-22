@@ -144,9 +144,7 @@ $currentUser = auth()->user();
                         @endphp
                         <div class="flex items-center justify-between p-3 border border-secondary/20 rounded-lg hover:border-secondary/40 hover:shadow-md transition-all" data-campaign-member-id="{{ $member->pivot->id }}" data-user-id="{{ $member->id }}">
                             <div class="flex items-center gap-3 flex-1 min-w-0">
-                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary shrink-0">
-                                    {{ substr($member->name, 0, 1) }}
-                                </div>
+                                <x-user-avatar :user="$member" class="w-8 h-8 text-xs" />
                                 <div class="flex-1 min-w-0">
                                     <p class="text-xs font-medium text-foreground truncate">{{ $member->name }}</p>
                                     <p class="text-xs text-gray-500">{{ $member->email }}</p>

@@ -30,6 +30,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/overview', [UserController::class, 'overview'])->name('user.overview');
     Route::get('/tasks', [UserController::class, 'tasks'])->name('user.tasks');
 
+    /* Profile Routes */
+    Route::get('/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');
+    Route::post('/profile/password', [UserController::class, 'updatePassword'])->name('user.profile.password');
+
     /* Project Routes */
     Route::get('/projects', [UserController::class, 'projects'])->name('user.projects');
     Route::get('/projects/{project}', [ProjectController::class, 'view'])->name('projects.view');

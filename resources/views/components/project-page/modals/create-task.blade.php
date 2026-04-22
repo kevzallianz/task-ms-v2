@@ -50,7 +50,7 @@
                             @foreach($cmembers as $campaignMember)
                                 @php $user = optional($campaignMember->user); @endphp
                                 <button type="button" data-member-id="{{ $campaignMember->id }}" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/50 text-sm flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-600">{{ strtoupper(substr($user->name ?? 'U',0,1)) }}</div>
+                                    <x-user-avatar :user="$user" class="w-8 h-8 text-xs" />
                                     <div>
                                         <div class="font-medium text-foreground">{{ $user->name ?? 'Member #' . $campaignMember->user_id }}</div>
                                         <div class="text-xs text-gray-500">{{ $user->email ?? '' }}</div>

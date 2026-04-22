@@ -115,12 +115,7 @@
                             @foreach ($project->activities as $activity)
                                 <li class="px-5 py-3 hover:bg-gray-50/60 transition-colors">
                                     <div class="flex items-start gap-2.5">
-                                        <div
-                                            class="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                                            <span class="text-[9px] font-bold text-primary uppercase leading-none">
-                                                {{ substr($activity->user->name ?? '?', 0, 1) }}
-                                            </span>
-                                        </div>
+                                        <x-user-avatar :user="$activity->user" class="w-6 h-6 text-[9px] border border-primary/20 mt-0.5" />
                                         <div class="min-w-0 flex-1">
                                             <p class="text-xs font-medium text-foreground">
                                                 {{ $activity->user->name ?? 'System' }}</p>
@@ -202,13 +197,7 @@
                                                     @foreach ($task->assignedMembers as $assigned)
                                                         <div
                                                             class="flex items-center gap-1 bg-primary/5 border border-primary/15 rounded-full pl-1 pr-2 py-0.5">
-                                                            <div
-                                                                class="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                                                                <span
-                                                                    class="text-[9px] font-bold text-primary uppercase leading-none">
-                                                                    {{ substr($assigned->user->name ?? '?', 0, 1) }}
-                                                                </span>
-                                                            </div>
+                                                            <x-user-avatar :user="$assigned->user" class="w-4 h-4 text-[9px]" />
                                                             <span
                                                                 class="text-xs text-primary font-medium whitespace-nowrap">{{ $assigned->user->name ?? '—' }}</span>
                                                         </div>

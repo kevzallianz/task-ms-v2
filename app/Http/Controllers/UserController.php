@@ -9,6 +9,9 @@ use App\Models\Project;
 use App\Models\ProjectTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -142,6 +145,53 @@ class UserController extends Controller
     public function tasks()
     {
         return view('user.tasks');
+    }
+
+    public function profile(Request $request)
+    {
+        return view('user.profile', ['user' => $request->user()]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name'     => 'required|string|max:100',
+            'username' => 'required|string|max:50|unique:users,username,'.$user->id,
+            'email'    => 'required|email|max:150|unique:users,email,'.$user->id,
+            'bio'      => 'nullable|string|max:500',
+            'avatar'   => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        $user->update($validated);
+
+        return response()->json(['message' => 'Profile updated successfully.']);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => ['required', function ($attribute, $value, $fail) use ($user) {
+                if (!Hash::check($value, $user->password)) {
+                    $fail('The current password is incorrect.');
+                }
+            }],
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        return response()->json(['message' => 'Password updated successfully.']);
     }
 
     public function projects(Request $request)

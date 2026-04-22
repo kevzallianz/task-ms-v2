@@ -121,9 +121,7 @@
                              data-member-id="{{ $member->pivot->id }}"
                              data-member-name="{{ $member->name }}">
                             <div class="flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
-                                    {{ substr($member->name, 0, 1) }}
-                                </div>
+                                <x-user-avatar :user="$member" class="w-8 h-8 text-xs" />
                                 <div>
                                     <p class="text-xs font-medium text-foreground">{{ $member->name }}</p>
                                     <p class="text-xs text-gray-500">{{ $member->email }}</p>

@@ -202,8 +202,8 @@
                     <tr class="border-b border-secondary/10 hover:bg-gray-50 transition">
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
-                                    ${member.avatar}
+                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary overflow-hidden">
+                                    ${member.avatar ? `<img src="${member.avatar}" alt="${member.name}" class="w-full h-full object-cover" loading="lazy" />` : member.avatar_initial}
                                 </div>
                                 <div>
                                     <p class="font-medium text-foreground">${member.name}</p>

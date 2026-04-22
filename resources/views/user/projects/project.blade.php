@@ -324,9 +324,7 @@
                     {{-- Creator --}}
                     @if ($project->user)
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold text-primary">
-                            {{ substr($project->user->name, 0, 1) }}
-                        </div>
+                        <x-user-avatar :user="$project->user" class="w-8 h-8 text-sm" />
                         <div class="flex-1">
                             <p class="text-xs font-medium text-foreground">{{ $project->user->name }}</p>
                             <span class="text-xs text-gray-500">Owner - {{ $project->campaign->name ?? 'Unknown' }}</span>

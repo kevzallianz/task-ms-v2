@@ -114,9 +114,7 @@ $memberUserIds = $task->taskMembers->map(fn($tm) => $tm->campaignMember->user_id
             @foreach ($task->taskMembers as $taskMember)
             @php $member = $taskMember->campaignMember->user; @endphp
             <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 rounded-full text-xs border border-primary/20">
-                <div class="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center text-[9px] font-semibold text-primary">
-                    {{ substr($member->name, 0, 1) }}
-                </div>
+                <x-user-avatar :user="$member" class="w-4 h-4 text-[9px]" />
                 <span class="text-foreground text-xs">{{ $member->name }}</span>
             </span>
             @endforeach
