@@ -46,13 +46,22 @@
                             @endif
                         </div>
                     </div>
-                    <div>
-                        <label for="avatarInput" class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition">
-                            <x-heroicon-o-camera class="w-4 h-4" />
-                            Change Photo
-                        </label>
-                        <input id="avatarInput" type="file" name="avatar" accept="image/jpg,image/jpeg,image/png,image/webp" class="hidden" />
-                        <p class="text-xs text-gray-500 mt-1">JPG, PNG or WebP. Max 2MB.</p>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-center gap-2">
+                            <label for="avatarInput" class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition">
+                                <x-heroicon-o-camera class="w-4 h-4" />
+                                Change Photo
+                            </label>
+                            <input id="avatarInput" type="file" name="avatar" accept="image/jpg,image/jpeg,image/png,image/webp" class="hidden" />
+                            @if($user->avatar)
+                            <button type="button" id="removeAvatarBtn"
+                                class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition">
+                                <x-heroicon-o-trash class="w-4 h-4" />
+                                Remove Photo
+                            </button>
+                            @endif
+                        </div>
+                        <p class="text-xs text-gray-500">JPG, PNG or WebP. Max 2MB.</p>
                         <span class="text-xs text-red-500 hidden" id="avatarError"></span>
                     </div>
                 </div>
@@ -210,6 +219,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
             panels.forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + target));
         });
+    });
+
+    // ── Remove avatar ──────────────────────────────────────────────
+    const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+    removeAvatarBtn?.addEventListener('click', function () {
+        if (!confirm('Remove your profile photo?')) return;
+        this.disabled = true;
+        this.textContent = 'Removing…';
+
+        fetch('{{ route("user.profile.avatar.remove") }}', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+        })
+        .then(async res => {
+            const data = await res.json();
+            if (!res.ok) {
+                showToast('error', data.message || 'Failed to remove photo.');
+                this.disabled = false;
+                this.innerHTML = '<svg class="w-4 h-4" ...></svg> Remove Photo';
+            } else {
+                showToast('success', data.message || 'Photo removed.');
+                setTimeout(() => location.reload(), 800);
+            }
+        })
+        .catch(() => showToast('error', 'An unexpected error occurred.'));
     });
 
     // ── Avatar preview ─────────────────────────────────────────────

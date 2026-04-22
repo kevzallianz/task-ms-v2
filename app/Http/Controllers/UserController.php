@@ -194,6 +194,19 @@ class UserController extends Controller
         return response()->json(['message' => 'Password updated successfully.']);
     }
 
+    public function removeAvatar(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        $user->update(['avatar' => null]);
+
+        return response()->json(['message' => 'Profile photo removed.']);
+    }
+
     public function projects(Request $request)
     {
         $campaignId = DB::table('campaign_members')

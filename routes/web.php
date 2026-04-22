@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('user.profile');
     Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');
     Route::post('/profile/password', [UserController::class, 'updatePassword'])->name('user.profile.password');
+    Route::delete('/profile/avatar', [UserController::class, 'removeAvatar'])->name('user.profile.avatar.remove');
 
     /* Project Routes */
     Route::get('/projects', [UserController::class, 'projects'])->name('user.projects');
