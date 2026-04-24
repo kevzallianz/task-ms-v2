@@ -19,15 +19,16 @@
             @csrf
 
             <div>
-                <select name="campaign_id" id="campaignId" class="w-full px-2 py-2 rounded-lg border border-secondary/20 text-sm">
-                    <option value="">Select Campaign</option>
-                    @foreach ($campaigns as $campaign)
-                        <option value="{{ $campaign->id }}">{{ $campaign->name }}</option>
-                    @endforeach
-                    @if($campaigns->isEmpty())
-                        <option value="" disabled>No campaigns available</option>
-                    @endif
-                </select>
+                <label class="text-sm font-medium">Campaign</label>
+                <input
+                    type="text"
+                    id="campaignName"
+                    value="{{ $campaigns->first()->name ?? 'No campaign available' }}"
+                    class="w-full px-3 py-2 rounded-lg border border-secondary/30 text-sm bg-gray-50 cursor-not-allowed"
+                    disabled
+                    readonly />
+                <!-- Hidden input to submit the campaign_id since disabled fields don't submit -->
+                <input type="hidden" name="campaign_id" id="campaignIdHidden" value="{{ $campaigns->first()->id ?? '' }}" />
                 <span class="text-xs text-red-500 hidden" id="campaignIdError"></span>
             </div>
             <!-- Project Name -->

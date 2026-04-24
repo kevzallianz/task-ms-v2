@@ -33,10 +33,10 @@ $createProjectModal.on('click', function(e) {
 // Form submission with AJAX
 $createProjectForm.on('submit', function(e) {
     e.preventDefault();
-    
+
     // Clear previous errors
     clearErrors();
-    
+
     // Disable submit button
     $submitProjectBtn.prop('disabled', true);
     $submitBtnText.text('Creating...');
@@ -57,7 +57,7 @@ $createProjectForm.on('submit', function(e) {
         success: function(response) {
             showToast('success', response.message || 'Project created successfully!');
             closeModal();
-            
+
             // Reload projects list
             setTimeout(() => {
                 location.reload();
@@ -65,11 +65,11 @@ $createProjectForm.on('submit', function(e) {
         },
         error: function(xhr) {
             const responseJSON = xhr.responseJSON || {};
-            
+
             if (responseJSON.errors) {
                 displayErrors(responseJSON.errors);
             }
-            
+
             const message = responseJSON.message || 'Failed to create project';
             showToast('error', message);
         },
@@ -86,6 +86,23 @@ function resetForm() {
     $createProjectForm[0].reset();
     const today = new Date().toISOString().split('T')[0];
     $('#startDate').val(today);
+
+    // Re-set campaign field (it gets reset by form reset)
+    // The campaign name input and hidden field will retain their initial values
+    const $campaignName = $('#campaignName');
+    const $campaignHidden = $('#campaignIdHidden');
+
+    // Get the initial values from the DOM
+    const initialCampaignName = $campaignName.attr('value');
+    const initialCampaignId = $campaignHidden.attr('value');
+
+    if (initialCampaignName) {
+        $campaignName.val(initialCampaignName);
+    }
+    if (initialCampaignId) {
+        $campaignHidden.val(initialCampaignId);
+    }
+
     clearErrors();
 }
 

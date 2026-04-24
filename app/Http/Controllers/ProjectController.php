@@ -8,6 +8,7 @@ use App\Mail\TaskUpdated;
 use App\Mail\TaskStatusUpdated;
 use App\Mail\TaskRemarkAdded;
 use App\Mail\TaskDeleted;
+use App\Mail\ProjectDeleted;
 use App\Models\Campaign;
 use App\Models\Project;
 use App\Models\ProjectContributor;
@@ -832,6 +833,11 @@ class ProjectController extends Controller
 
         try {
             $projectName = $project->name;
+            $campaignName = $project->campaign->name ?? 'Unknown Campaign';
+            $deletedBy = Auth::user();
+
+            // Get recipients before deleting the project
+            $recipients = $this->getProjectNotificationRecipients($project);
 
             // Delete all related data
             // Delete all task remarks for all tasks in this project
@@ -848,6 +854,11 @@ class ProjectController extends Controller
 
             // Delete the project itself
             $project->delete();
+
+            // Send email notifications after successful deletion
+            foreach ($recipients as $recipient) {
+                Mail::to($recipient->email)->send(new ProjectDeleted($projectName, $campaignName, $deletedBy));
+            }
 
             return response()->json([
                 'message' => 'Project deleted successfully!',
