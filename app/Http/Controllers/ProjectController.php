@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Mail\CampaignMemberJoined;
 use App\Mail\NewCampaignTask;
+use App\Mail\TaskUpdated;
+use App\Mail\TaskStatusUpdated;
+use App\Mail\TaskRemarkAdded;
+use App\Mail\TaskDeleted;
 use App\Models\Campaign;
 use App\Models\Project;
 use App\Models\ProjectContributor;
@@ -75,6 +79,40 @@ class ProjectController extends Controller
             'description' => $description,
             'metadata' => $metadata,
         ]);
+    }
+
+    /**
+     * Get all users who should be notified about project activities.
+     * Includes members from the project owner campaign and contributor campaigns.
+     */
+    private function getProjectNotificationRecipients(Project $project): array
+    {
+        $recipients = [];
+
+        // Get project owner campaign members
+        if ($project->campaign) {
+            $ownerMembers = $project->campaign->campaignMembers()->with('user')->get();
+            foreach ($ownerMembers as $member) {
+                if ($member->user && $member->user->email) {
+                    $recipients[$member->user->email] = $member->user;
+                }
+            }
+        }
+
+        // Get contributor campaign members
+        $contributors = $project->contributors()->with('campaign.campaignMembers.user')->get();
+        foreach ($contributors as $contributor) {
+            if ($contributor->campaign) {
+                $contributorMembers = $contributor->campaign->campaignMembers;
+                foreach ($contributorMembers as $member) {
+                    if ($member->user && $member->user->email) {
+                        $recipients[$member->user->email] = $member->user;
+                    }
+                }
+            }
+        }
+
+        return array_values($recipients);
     }
 
     /**
@@ -479,6 +517,18 @@ class ProjectController extends Controller
             if ($task->title !== $validated['title']) {
                 $changes['title'] = ['from' => $task->title, 'to' => $validated['title']];
             }
+            if ($task->description !== ($validated['description'] ?? null)) {
+                $changes['description'] = ['from' => $task->description ?? 'N/A', 'to' => $validated['description'] ?? 'N/A'];
+            }
+            if ($task->start_date !== ($validated['start_date'] ?? null)) {
+                $changes['start_date'] = ['from' => $task->start_date ?? 'N/A', 'to' => $validated['start_date'] ?? 'N/A'];
+            }
+            if ($task->target_date !== ($validated['target_date'] ?? null)) {
+                $changes['target_date'] = ['from' => $task->target_date ?? 'N/A', 'to' => $validated['target_date'] ?? 'N/A'];
+            }
+            if ($task->status !== $validated['status']) {
+                $changes['status'] = ['from' => $task->status, 'to' => $validated['status']];
+            }
 
             $task->update([
                 'title' => $validated['title'],
@@ -494,6 +544,14 @@ class ProjectController extends Controller
                 'task_id' => $task->id,
                 'changes' => $changes ?: null,
             ]);
+
+            // Send email notifications
+            $recipients = $this->getProjectNotificationRecipients($project);
+            $updatedBy = Auth::user();
+
+            foreach ($recipients as $recipient) {
+                Mail::to($recipient->email)->send(new TaskUpdated($project, $task, $updatedBy, $changes));
+            }
 
             return response()->json([
                 'message' => 'Task updated successfully!',
@@ -549,6 +607,14 @@ class ProjectController extends Controller
                 'old_status' => $oldStatus,
                 'new_status' => $validated['status'],
             ]);
+
+            // Send email notifications
+            $recipients = $this->getProjectNotificationRecipients($project);
+            $updatedBy = Auth::user();
+
+            foreach ($recipients as $recipient) {
+                Mail::to($recipient->email)->send(new TaskStatusUpdated($project, $task, $updatedBy, $oldStatus, $validated['status']));
+            }
 
             return response()->json([
                 'message' => 'Task status updated successfully!',
@@ -614,7 +680,7 @@ class ProjectController extends Controller
         ]);
 
         try {
-            ProjectRemarks::create([
+            $remark = ProjectRemarks::create([
                 'project_task_id' => $task->id,
                 'user_id' => Auth::id(),
                 'remarks' => $validated['remark'],
@@ -630,6 +696,14 @@ class ProjectController extends Controller
                 'task_title' => $task->title,
                 'remark_preview' => $remarkPreview,
             ]);
+
+            // Send email notifications
+            $recipients = $this->getProjectNotificationRecipients($project);
+            $addedBy = Auth::user();
+
+            foreach ($recipients as $recipient) {
+                Mail::to($recipient->email)->send(new TaskRemarkAdded($project, $task, $remark, $addedBy));
+            }
 
             return response()->json([
                 'message' => 'Remark added successfully!',
@@ -724,6 +798,14 @@ class ProjectController extends Controller
             // Log activity
             $this->logActivity($project, 'task_deleted', 'Deleted task "' . $taskTitle . '"', [
             ]);
+
+            // Send email notifications
+            $recipients = $this->getProjectNotificationRecipients($project);
+            $deletedBy = Auth::user();
+
+            foreach ($recipients as $recipient) {
+                Mail::to($recipient->email)->send(new TaskDeleted($project, $taskTitle, $deletedBy));
+            }
 
             return response()->json([
                 'message' => 'Task deleted successfully!',

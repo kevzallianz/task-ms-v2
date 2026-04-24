@@ -264,7 +264,7 @@
 
                 @if ($totalTasks > 0)
                 <div class="flex flex-col items-center">
-                    <div class="w-full max-w-[200px] mb-4">
+                    <div class="w-full max-w-50 mb-4">
                         <canvas id="projectStatsChart"
                             data-pending="{{ $pendingTasks }}"
                             data-ongoing="{{ $ongoingTasks }}"
