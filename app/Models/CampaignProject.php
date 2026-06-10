@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class CampaignProject extends Model
 {
     protected $fillable = [
@@ -19,6 +22,11 @@ class CampaignProject extends Model
     public function campaign()
     {
         return $this->belongsTo(Campaign::class);
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(CampaignTask::class, 'campaign_project_id');
     }
 
     /**

@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
 
     /* Campaign Routes */
     Route::get('/campaign', [CampaignController::class, 'index'])->name('user.campaign');
+    Route::get('/campaign/accomplished', [CampaignController::class, 'accomplishedProjects'])->name('campaigns.accomplished');
     Route::post('/campaigns/{campaign}/members', [CampaignController::class, 'addMember'])->name('campaigns.add-member');
     Route::put('/campaigns/{campaign}/members/{campaignMember}/access-level', [CampaignController::class, 'updateMemberAccess'])->name('campaigns.members.update-access');
     Route::post('/campaigns/{campaign}/tasks', [CampaignController::class, 'storeTask'])->name('campaigns.tasks.store');

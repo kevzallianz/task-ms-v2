@@ -24,7 +24,7 @@ class CampaignController extends Controller
         $campaigns = Campaign::whereHas('members', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })->with([
-            'projects',
+            'projects' => fn ($q) => $q->where('status', '!=', 'accomplished'),
             'members',
         ])->get();
 
@@ -53,6 +53,27 @@ class CampaignController extends Controller
         return view('user.campaigns.index', [
             'campaigns' => $campaigns,
         ]);
+    }
+
+    /**
+     * Show accomplished/archived projects across all user campaigns.
+     */
+    public function accomplishedProjects()
+    {
+        $user = request()->user();
+
+        $campaigns = Campaign::whereHas('members', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->with([
+            'projects' => function ($q) {
+                $q->where('status', 'accomplished')
+                  ->withCount('tasks');
+            },
+        ])->get()
+          ->filter(fn ($c) => $c->projects->count() > 0)
+          ->values();
+
+        return view('user.campaigns.accomplished', compact('campaigns'));
     }
 
     /**
