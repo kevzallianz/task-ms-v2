@@ -25,9 +25,22 @@ $canReopen = in_array($userAccessLevel, ['editor', 'all']);
         @php
         $total = $campaigns->sum(fn($c) => $c->projects->count());
         @endphp
-        <span class="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
-            {{ $total }} project{{ $total !== 1 ? 's' : '' }}
-        </span>
+        <div class="flex items-center gap-3">
+            <form method="GET" action="{{ route('campaigns.accomplished') }}" class="flex items-center gap-2">
+                <label for="accomplishedDate" class="text-xs font-medium text-gray-500">Accomplished on</label>
+                <input type="date" id="accomplishedDate" name="accomplished_date" value="{{ $accomplishedDate }}"
+                    class="px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    onchange="this.form.submit()">
+                @if ($accomplishedDate)
+                <a href="{{ route('campaigns.accomplished') }}" class="text-xs font-medium text-gray-500 hover:text-primary transition">
+                    Clear
+                </a>
+                @endif
+            </form>
+            <span class="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+                {{ $total }} project{{ $total !== 1 ? 's' : '' }}
+            </span>
+        </div>
     </article>
 
     @if ($campaigns->count() > 0)
@@ -94,9 +107,9 @@ $canReopen = in_array($userAccessLevel, ['editor', 'all']);
 
                         {{-- Accomplished badge --}}
                         <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-                            <span class="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                            <span class="inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full" title="Accomplished on {{ \Carbon\Carbon::parse($project->updated_at)->format('M d, Y') }}">
                                 <x-heroicon-o-check-circle class="w-3.5 h-3.5" />
-                                Accomplished
+                                {{ \Carbon\Carbon::parse($project->updated_at)->format('M d, Y') }}
                             </span>
                             <div class="flex items-center gap-2">
                                 @if ($canReopen)
@@ -125,6 +138,15 @@ $canReopen = in_array($userAccessLevel, ['editor', 'all']);
     @else
     <div class="flex flex-col items-center justify-center py-20 text-center bg-white border border-gray-200 rounded-xl">
         <x-heroicon-o-archive-box class="w-14 h-14 text-gray-200 mb-3" />
+        @if ($accomplishedDate)
+        <h2 class="text-base font-semibold text-gray-600 mb-1">No projects accomplished on this date</h2>
+        <p class="text-sm text-gray-400 mb-4">Try a different date or clear the filter.</p>
+        <a href="{{ route('campaigns.accomplished') }}"
+            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition">
+            <x-heroicon-o-x-mark class="w-4 h-4" />
+            Clear Filter
+        </a>
+        @else
         <h2 class="text-base font-semibold text-gray-600 mb-1">No accomplished projects yet</h2>
         <p class="text-sm text-gray-400 mb-4">Projects marked as accomplished will appear here.</p>
         <a href="{{ route('user.campaign') }}"
@@ -132,6 +154,7 @@ $canReopen = in_array($userAccessLevel, ['editor', 'all']);
             <x-heroicon-o-arrow-left class="w-4 h-4" />
             Back to Campaigns
         </a>
+        @endif
     </div>
     @endif
 

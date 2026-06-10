@@ -6,28 +6,39 @@
 
             $statistics = [
                 1 => [
+                    'label' => 'My Open Tasks',
+                    'value' => $myTasksCount,
+                    'icon' => 'list-bullet',
+                    'color' => 'primary',
+                    'url' => route('user.campaign') . '#my-tasks',
+                ],
+                2 => [
                     'label' => 'Accomplished Tasks',
                     'value' => $totalAccomplishedAssigned,
                     'icon' => 'check-circle',
                     'color' => 'green',
+                    'url' => route('user.campaign') . '?my_tasks_status=accomplished#my-tasks',
                 ],
-                2 => [
+                3 => [
                     'label' => 'Total Projects',
                     'value' => $totalProjects,
                     'icon' => 'folder',
                     'color' => 'secondary',
+                    'url' => route('user.projects'),
                 ],
-                3 => [
+                4 => [
                     'label' => 'Campaign Tasks',
                     'value' => $totalCampaignTasks,
                     'icon' => 'clipboard-document-list',
                     'color' => 'blue',
+                    'url' => route('user.campaign'),
                 ],
-                4 => [
+                5 => [
                     'label' => 'Project Tasks',
                     'value' => $totalProjectTasks,
                     'icon' => 'clipboard-document-check',
                     'color' => 'purple',
+                    'url' => route('user.projects'),
                 ],
             ];
 
@@ -45,57 +56,321 @@
         </article>
 
         {{-- Statistics Cards --}}
-        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             @foreach ($statistics as $statistic)
-                <div class="bg-white rounded-lg p-6 border border-gray-200 transition">
+                <a href="{{ $statistic['url'] }}"
+                    class="group bg-white rounded-lg p-6 border border-gray-200 transition hover:border-{{ $statistic['color'] }}/40 hover:shadow-md">
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-600">{{ $statistic['label'] }}</p>
                             <p class="text-xl font-bold text-{{ $statistic['color'] }} mt-2">{{ $statistic['value'] }}</p>
                         </div>
-                        <div class="bg-{{ $statistic['color'] }}/10 p-3 rounded-lg">
+                        <div class="bg-{{ $statistic['color'] }}/10 p-3 rounded-lg group-hover:bg-{{ $statistic['color'] }}/20 transition">
                             <x-heroicon-o-{{ $statistic['icon'] }} class="w-5 h-5 text-{{ $statistic['color'] }}" />
                         </div>
                     </div>
-                </div>
+                </a>
             @endforeach
         </section>
 
-        {{-- Status Overview & Alerts --}}
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- Main two-column layout: primary content + sidebar --}}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+        {{-- Main Column --}}
+        <div class="lg:col-span-2 flex flex-col gap-6">
+
             {{-- Campaign Tasks Status --}}
-            <div class="bg-white rounded-lg p-6 border border-gray-200 col-span-2">
+            <section class="bg-white rounded-lg p-6 border border-gray-200">
                 <div class="flex items-center gap-2 mb-4">
                     <x-heroicon-o-chart-bar class="w-5 h-5 text-primary" />
                     <h2 class="text-base font-semibold text-primary">Campaign Tasks</h2>
                 </div>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <span class="text-sm font-medium text-gray-700">Planning</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="flex flex-col gap-1 p-3 bg-blue-50 rounded-lg">
+                        <span class="text-xs font-medium text-gray-600">Planning</span>
                         <span class="text-lg font-bold text-blue-600">{{ $campaignTasksStatus->get('planning', 0) }}</span>
                     </div>
-                    <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                        <span class="text-sm font-medium text-gray-700">Ongoing</span>
+                    <div class="flex flex-col gap-1 p-3 bg-yellow-50 rounded-lg">
+                        <span class="text-xs font-medium text-gray-600">Ongoing</span>
                         <span class="text-lg font-bold text-yellow-600">{{ $campaignTasksStatus->get('ongoing', 0) }}</span>
                     </div>
-                    <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                        <span class="text-sm font-medium text-gray-700">On Hold</span>
+                    <div class="flex flex-col gap-1 p-3 bg-orange-50 rounded-lg">
+                        <span class="text-xs font-medium text-gray-600">On Hold</span>
                         <span
                             class="text-lg font-bold text-orange-600">{{ $campaignTasksStatus->get('on_hold', 0) }}</span>
                     </div>
-                    <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                        <span class="text-sm font-medium text-gray-700">Accomplished</span>
+                    <div class="flex flex-col gap-1 p-3 bg-green-50 rounded-lg">
+                        <span class="text-xs font-medium text-gray-600">Accomplished</span>
                         <span
                             class="text-lg font-bold text-green-600">{{ $campaignTasksStatus->get('accomplished', 0) }}</span>
                     </div>
                 </div>
+            </section>
+
+            {{-- My Tasks --}}
+        <section class="bg-white rounded-lg border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <x-heroicon-o-list-bullet class="w-5 h-5 text-primary" />
+                        <h2 class="text-base font-semibold text-primary">My Tasks</h2>
+                        @if ($myTasksCount > 0)
+                            <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{{ $myTasksCount }} open</span>
+                        @endif
+                    </div>
+                    <a href="{{ route('user.campaign') }}#my-tasks" class="text-sm text-primary hover:underline">View All</a>
+                </div>
+            </div>
+            <div class="divide-y divide-gray-200">
+                @php
+                    $myTasksStatusBadge = [
+                        'planning' => 'bg-blue-100 text-blue-700 border-blue-200',
+                        'for_approval' => 'bg-purple-100 text-purple-700 border-purple-200',
+                        'ongoing' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                        'on_hold' => 'bg-orange-100 text-orange-700 border-orange-200',
+                    ];
+                @endphp
+                @forelse($myOpenTasks as $task)
+                    @php
+                        $isOverdue = $task->target_date && \Carbon\Carbon::parse($task->target_date)->isPast();
+                    @endphp
+                    <a href="{{ $task->campaign_project_id ? route('campaigns.projects.view', [$task->campaign_id, $task->campaign_project_id]) : route('user.campaign') . '#' . $task->campaign_id }}"
+                        class="flex items-center justify-between gap-4 p-4 hover:bg-gray-50 transition">
+                        <div class="flex-1 min-w-0">
+                            <h3 class="font-medium text-gray-900 truncate">{{ $task->title }}</h3>
+                            <p class="text-xs text-gray-500 mt-1 truncate">
+                                <span class="font-medium">{{ $task->campaign->name ?? '—' }}</span>
+                                @if ($task->project)
+                                    &middot; {{ $task->project->title }}
+                                @endif
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="text-xs px-2 py-1 rounded border {{ $myTasksStatusBadge[$task->status] ?? 'bg-gray-100 text-gray-700 border-gray-200' }}">
+                                {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                            </span>
+                            @if ($task->target_date)
+                                <span class="text-xs font-medium {{ $isOverdue ? 'text-red-600' : 'text-gray-600' }}">
+                                    {{ \Carbon\Carbon::parse($task->target_date)->format('M d, Y') }}
+                                </span>
+                            @endif
+                        </div>
+                    </a>
+                @empty
+                    <div class="p-8 text-center">
+                        <x-heroicon-o-check-badge class="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                        <p class="text-sm text-gray-500">You're all caught up — no open tasks assigned to you.</p>
+                    </div>
+                @endforelse
+            </div>
+        </section>
+
+            {{-- Upcoming Campaign Tasks --}}
+            <section class="bg-white rounded-lg border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <x-heroicon-o-calendar class="w-5 h-5 text-primary" />
+                            <h2 class="text-base font-semibold text-primary">Upcoming Campaign Tasks</h2>
+                        </div>
+                        <a href="{{ route('user.campaign') }}" class="text-sm text-primary hover:underline">View All</a>
+                    </div>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    @forelse($upcomingCampaignTasks as $task)
+                        <a href="{{ $task->campaign_project_id ? route('campaigns.projects.view', [$task->campaign_id, $task->campaign_project_id]) : route('user.campaign') }}"
+                            class="block p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-medium text-gray-900 truncate">{{ $task->title }}</h3>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        <span class="font-medium">Campaign:</span> {{ $task->campaign->name }}
+                                    </p>
+                                    @if ($task->taskMembers->count() > 0)
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <x-heroicon-o-user class="w-4 h-4 text-gray-400" />
+                                            <div class="flex flex-wrap gap-1">
+                                                @foreach ($task->taskMembers as $taskMember)
+                                                    <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                                        {{ $taskMember->campaignMember->user->name }}
+                                                    </span>
+                                                @endforeach
+                                                @if ($task->taskMembers->count() > 3)
+                                                    <span
+                                                        class="text-xs text-gray-500">+{{ $task->taskMembers->count() - 3 }}
+                                                        more</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="flex flex-col items-end gap-2 shrink-0">
+                                    @php
+                                        $secondsUntil = now()->diffInSeconds($task->target_date, false);
+                                        $daysUntil = $secondsUntil > 0 ? (int) ceil($secondsUntil / 86400) : 0;
+                                        $isUrgent = $secondsUntil >= 0 && $secondsUntil <= 3 * 86400;
+                                    @endphp
+                                    <span class="text-xs font-medium {{ $isUrgent ? 'text-red-600' : 'text-gray-600' }}">
+                                        {{ now()->parse($task->target_date)->format('M d, Y') }}
+                                    </span>
+                                    @if ($isUrgent)
+                                        <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
+                                            @if ($daysUntil >= 1)
+                                                Due in {{ $daysUntil }} {{ $daysUntil == 1 ? 'day' : 'days' }}
+                                            @else
+                                                Due today
+                                            @endif
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="p-8 text-center">
+                            <x-heroicon-o-calendar-days class="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                            <p class="text-sm text-gray-500">No upcoming campaign tasks</p>
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+
+            {{-- Recent Projects --}}
+            <section class="bg-white rounded-lg border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <x-heroicon-o-folder class="w-5 h-5 text-primary" />
+                            <h2 class="text-base font-semibold text-primary">Recent Projects</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="divide-y divide-gray-200">
+                    @forelse($recentProjects as $project)
+                        <a href="{{ $project->type === 'campaign_project' ? route('campaigns.projects.view', [$project->campaign_id, $project->id]) : route('projects.view', $project->id) }}"
+                            class="block p-4 hover:bg-gray-50 transition">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-medium text-gray-900 truncate">{{ $project->name ?? $project->title ?? null }}</h3>
+                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $project->description ?? 'No description' }}</p>
+                                    @if ($project->campaign)
+                                        <p class="text-xs text-gray-500 mt-2">
+                                            <span class="font-medium">Campaign:</span> {{ $project->campaign->name }}
+                                        </p>
+                                    @endif
+                                </div>
+                                <div class="flex flex-col items-end gap-2 shrink-0">
+                                    @php
+                                        $statusColors = [
+                                            'planning' => 'bg-blue-100 text-blue-700 border-blue-200',
+                                            'ongoing' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                                            'on_hold' => 'bg-orange-100 text-orange-700 border-orange-200',
+                                            'accomplished' => 'bg-green-100 text-green-700 border-green-200',
+                                        ];
+                                    @endphp
+                                    <span
+                                        class="text-xs px-2 py-1 rounded border {{ $statusColors[$project->status] ?? 'bg-gray-100 text-gray-700 border-gray-200' }}">
+                                        {{ ucfirst(str_replace('_', ' ', $project->status)) }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">
+                                        {{ $project->created_at->diffForHumans() }}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="p-8 text-center">
+                            <x-heroicon-o-folder-open class="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                            <p class="text-sm text-gray-500">No recent projects</p>
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+
+            {{-- Task Calendar --}}
+        <section class="bg-white rounded-lg border border-gray-200 p-6">
+            {{-- Header & Legend --}}
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <x-heroicon-o-calendar-days class="w-5 h-5 text-primary" />
+                    <h2 class="text-base font-semibold text-primary">Campaign Task Calendar</h2>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
+                        <span class="text-gray-600">Planning</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                        <span class="text-gray-600">Ongoing</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                        <span class="text-gray-600">On Hold</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                        <span class="text-gray-600">Accomplished / Completed</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>
+                        <span class="text-gray-600">Pending</span>
+                    </div>
+                    <span class="w-px h-4 bg-gray-200"></span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block w-1 h-3 rounded-sm bg-purple-400"></span>
+                        <span class="text-gray-600">Project Task</span>
+                    </div>
+                </div>
             </div>
 
+            {{-- Month Navigation --}}
+            <div class="flex items-center justify-between mb-4">
+                <button id="cal-prev" class="p-2 rounded-lg hover:bg-gray-100 transition">
+                    <x-heroicon-o-chevron-left class="w-4 h-4 text-gray-600" />
+                </button>
+                <h3 id="cal-month-label" class="text-sm font-semibold text-gray-800"></h3>
+                <button id="cal-next" class="p-2 rounded-lg hover:bg-gray-100 transition">
+                    <x-heroicon-o-chevron-right class="w-4 h-4 text-gray-600" />
+                </button>
+            </div>
+
+            {{-- Day-of-week headers --}}
+            <div class="grid grid-cols-7 mb-1">
+                @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $dow)
+                    <div class="text-center text-xs font-medium text-gray-500 py-1">{{ $dow }}</div>
+                @endforeach
+            </div>
+
+            {{-- Calendar Grid --}}
+            <div id="cal-grid" class="grid grid-cols-7 gap-1"></div>
+
+            {{-- Task Detail Panel --}}
+            <div id="cal-detail" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 id="cal-detail-date" class="text-sm font-semibold text-gray-800"></h4>
+                    <button id="cal-detail-close" class="text-gray-400 hover:text-gray-600 transition">
+                        <x-heroicon-o-x-mark class="w-4 h-4" />
+                    </button>
+                </div>
+                <div id="cal-detail-tasks" class="space-y-2 max-h-56 overflow-y-auto"></div>
+            </div>
+            </section>
+
+        </div>
+        {{-- /Main Column --}}
+
+        {{-- Sidebar --}}
+        <div class="lg:col-span-1 flex flex-col gap-6 lg:sticky lg:top-6">
             {{-- Alerts & Notifications --}}
-            <div class="bg-white rounded-lg p-6 border border-gray-200">
-                <div class="flex items-center gap-2 mb-4">
-                    <x-heroicon-o-bell class="w-5 h-5 text-red-600" />
-                    <h2 class="text-base font-semibold text-primary">Alerts</h2>
+            <section class="bg-white rounded-lg p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <x-heroicon-o-bell class="w-5 h-5 text-red-600" />
+                        <h2 class="text-base font-semibold text-primary">Alerts</h2>
+                    </div>
+                    @if ($overdueCampaignTasks > 0 || $upcomingCampaignTasks->count() > 0)
+                        <a href="{{ route('user.campaign') }}#my-tasks" class="text-xs text-primary hover:underline">View My Tasks</a>
+                    @endif
                 </div>
                 <div class="space-y-4">
                     @if ($overdueCampaignTasks > 0)
@@ -187,202 +462,39 @@
                         </div>
                     @endif
                 </div>
-            </div>
-        </section>
+            </section>
 
-        {{-- Recent Activity --}}
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {{-- Upcoming Tasks --}}
-            <div class="bg-white rounded-lg border border-gray-200">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <x-heroicon-o-calendar class="w-5 h-5 text-primary" />
-                            <h2 class="text-base font-semibold text-primary">Upcoming Campaign Tasks</h2>
+            {{-- Quick Actions --}}
+            <section class="bg-linear-to-r from-primary to-secondary rounded-lg p-6 text-white">
+                <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-1 gap-3">
+                    <a href="{{ route('user.campaign') }}"
+                        class="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3 group">
+                        <div class="bg-white/20 p-3 rounded-lg shrink-0">
+                            <x-heroicon-o-users class="w-6 h-6" />
                         </div>
-                        <a href="{{ route('user.campaign') }}" class="text-sm text-primary hover:underline">View All</a>
-                    </div>
-                </div>
-                <div class="divide-y divide-gray-200">
-                    @forelse($upcomingCampaignTasks as $task)
-                        <a href="{{ $task->campaign_project_id ? route('campaigns.projects.view', [$task->campaign_id, $task->campaign_project_id]) : route('user.campaign') }}"
-                            class="block p-4 hover:bg-gray-50 transition">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-medium text-gray-900 truncate">{{ $task->title }}</h3>
-                                    <p class="text-sm text-gray-600 mt-1">
-                                        <span class="font-medium">Campaign:</span> {{ $task->campaign->name }}
-                                    </p>
-                                    @if ($task->taskMembers->count() > 0)
-                                        <div class="flex items-center gap-2 mt-2">
-                                            <x-heroicon-o-user class="w-4 h-4 text-gray-400" />
-                                            <div class="flex flex-wrap gap-1">
-                                                @foreach ($task->taskMembers as $taskMember)
-                                                    <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                                        {{ $taskMember->campaignMember->user->name }}
-                                                    </span>
-                                                @endforeach
-                                                @if ($task->taskMembers->count() > 3)
-                                                    <span
-                                                        class="text-xs text-gray-500">+{{ $task->taskMembers->count() - 3 }}
-                                                        more</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="flex flex-col items-end gap-2 shrink-0">
-                                    @php
-                                        $secondsUntil = now()->diffInSeconds($task->target_date, false);
-                                        $daysUntil = $secondsUntil > 0 ? (int) ceil($secondsUntil / 86400) : 0;
-                                        $isUrgent = $secondsUntil >= 0 && $secondsUntil <= 3 * 86400;
-                                    @endphp
-                                    <span class="text-xs font-medium {{ $isUrgent ? 'text-red-600' : 'text-gray-600' }}">
-                                        {{ now()->parse($task->target_date)->format('M d, Y') }}
-                                    </span>
-                                    @if ($isUrgent)
-                                        <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-medium">
-                                            @if ($daysUntil >= 1)
-                                                Due in {{ $daysUntil }} {{ $daysUntil == 1 ? 'day' : 'days' }}
-                                            @else
-                                                Due today
-                                            @endif
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-                        </a>
-                    @empty
-                        <div class="p-8 text-center">
-                            <x-heroicon-o-calendar-days class="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                            <p class="text-sm text-gray-500">No upcoming campaign tasks</p>
+                        <div>
+                            <p class="font-semibold">View Campaigns</p>
+                            <p class="text-sm text-white/80">Manage your team campaigns</p>
                         </div>
-                    @endforelse
-                </div>
-            </div>
-
-            {{-- Recent Projects --}}
-            <div class="bg-white rounded-lg border border-gray-200">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <x-heroicon-o-folder class="w-5 h-5 text-primary" />
-                            <h2 class="text-base font-semibold text-primary">Recent Projects</h2>
+                    </a>
+                    <a href="{{ route('user.projects') }}"
+                        class="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3 group">
+                        <div class="bg-white/20 p-3 rounded-lg shrink-0">
+                            <x-heroicon-o-folder class="w-6 h-6" />
                         </div>
-                    </div>
-                </div>
-                <div class="divide-y divide-gray-200">
-                    @forelse($recentProjects as $project)
-                        <a href="{{ $project->type === 'campaign_project' ? route('campaigns.projects.view', [$project->campaign_id, $project->id]) : route('projects.view', $project->id) }}"
-                            class="block p-4 hover:bg-gray-50 transition">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-medium text-gray-900 truncate">{{ $project->name ?? $project->title ?? null }}</h3>
-                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $project->description ?? 'No description' }}</p>
-                                    @if ($project->campaign)
-                                        <p class="text-xs text-gray-500 mt-2">
-                                            <span class="font-medium">Campaign:</span> {{ $project->campaign->name }}
-                                        </p>
-                                    @endif
-                                </div>
-                                <div class="flex flex-col items-end gap-2 shrink-0">
-                                    @php
-                                        $statusColors = [
-                                            'planning' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                            'ongoing' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                                            'on_hold' => 'bg-orange-100 text-orange-700 border-orange-200',
-                                            'accomplished' => 'bg-green-100 text-green-700 border-green-200',
-                                        ];
-                                    @endphp
-                                    <span
-                                        class="text-xs px-2 py-1 rounded border {{ $statusColors[$project->status] ?? 'bg-gray-100 text-gray-700 border-gray-200' }}">
-                                        {{ ucfirst(str_replace('_', ' ', $project->status)) }}
-                                    </span>
-                                    <span class="text-xs text-gray-500">
-                                        {{ $project->created_at->diffForHumans() }}
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
-                    @empty
-                        <div class="p-8 text-center">
-                            <x-heroicon-o-folder-open class="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                            <p class="text-sm text-gray-500">No recent projects</p>
+                        <div>
+                            <p class="font-semibold">View Projects</p>
+                            <p class="text-sm text-white/80">Browse all your projects</p>
                         </div>
-                    @endforelse
+                    </a>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
+        {{-- /Sidebar --}}
 
-        {{-- Task Calendar --}}
-        <section class="bg-white rounded-lg border border-gray-200 p-6">
-            {{-- Header & Legend --}}
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <div class="flex items-center gap-2">
-                    <x-heroicon-o-calendar-days class="w-5 h-5 text-primary" />
-                    <h2 class="text-base font-semibold text-primary">Campaign Task Calendar</h2>
-                </div>
-                <div class="flex flex-wrap items-center gap-3 text-xs">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
-                        <span class="text-gray-600">Planning</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
-                        <span class="text-gray-600">Ongoing</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
-                        <span class="text-gray-600">On Hold</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
-                        <span class="text-gray-600">Accomplished / Completed</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full bg-gray-400 inline-block"></span>
-                        <span class="text-gray-600">Pending</span>
-                    </div>
-                    <span class="w-px h-4 bg-gray-200"></span>
-                    <div class="flex items-center gap-1.5">
-                        <span class="inline-block w-1 h-3 rounded-sm bg-purple-400"></span>
-                        <span class="text-gray-600">Project Task</span>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Month Navigation --}}
-            <div class="flex items-center justify-between mb-4">
-                <button id="cal-prev" class="p-2 rounded-lg hover:bg-gray-100 transition">
-                    <x-heroicon-o-chevron-left class="w-4 h-4 text-gray-600" />
-                </button>
-                <h3 id="cal-month-label" class="text-sm font-semibold text-gray-800"></h3>
-                <button id="cal-next" class="p-2 rounded-lg hover:bg-gray-100 transition">
-                    <x-heroicon-o-chevron-right class="w-4 h-4 text-gray-600" />
-                </button>
-            </div>
-
-            {{-- Day-of-week headers --}}
-            <div class="grid grid-cols-7 mb-1">
-                @foreach (['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $dow)
-                    <div class="text-center text-xs font-medium text-gray-500 py-1">{{ $dow }}</div>
-                @endforeach
-            </div>
-
-            {{-- Calendar Grid --}}
-            <div id="cal-grid" class="grid grid-cols-7 gap-1"></div>
-
-            {{-- Task Detail Panel --}}
-            <div id="cal-detail" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 id="cal-detail-date" class="text-sm font-semibold text-gray-800"></h4>
-                    <button id="cal-detail-close" class="text-gray-400 hover:text-gray-600 transition">
-                        <x-heroicon-o-x-mark class="w-4 h-4" />
-                    </button>
-                </div>
-                <div id="cal-detail-tasks" class="space-y-2 max-h-56 overflow-y-auto"></div>
-            </div>
-        </section>
+        </div>
+        {{-- /Main two-column layout --}}
 
         <script>
             (function() {
@@ -765,32 +877,5 @@
                 renderCalendar();
             }());
         </script>
-
-        {{-- Quick Actions --}}
-        <section class="bg-linear-to-r from-primary to-secondary rounded-lg p-6 text-white">
-            <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <a href="{{ route('user.campaign') }}"
-                    class="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3 group">
-                    <div class="bg-white/20 p-3 rounded-lg">
-                        <x-heroicon-o-users class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p class="font-semibold">View Campaigns</p>
-                        <p class="text-sm text-white/80">Manage your team campaigns</p>
-                    </div>
-                </a>
-                <a href="{{ route('user.projects') }}"
-                    class="bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg p-4 transition flex items-center gap-3 group">
-                    <div class="bg-white/20 p-3 rounded-lg">
-                        <x-heroicon-o-folder class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p class="font-semibold">View Projects</p>
-                        <p class="text-sm text-white/80">Browse all your projects</p>
-                    </div>
-                </a>
-            </div>
-        </section>
     </main>
 @endsection

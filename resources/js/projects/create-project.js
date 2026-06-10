@@ -1,6 +1,6 @@
 // Get elements using jQuery
 const $createProjectModal = $('#createProjectModal');
-const $openCreateProjectModalBtn = $('#openCreateProjectModal');
+const $openCreateProjectModalBtn = $('#openCreateProjectModal, #openCreateProjectModalEmpty');
 const $closeProjectModalBtn = $('#closeProjectModal');
 const $cancelProjectBtn = $('#cancelProjectBtn');
 const $createProjectForm = $('#createProjectForm');

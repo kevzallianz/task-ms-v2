@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AccomplishmentReport;
 use App\Mail\CampaignMemberJoined;
+use App\Models\AccomplishmentReportLog;
 use App\Models\Campaign;
 use App\Models\CampaignMember;
 use App\Models\CampaignProject;
@@ -50,9 +52,153 @@ class CampaignController extends Controller
             $campaign->filterMember = request()->get('campaign_'.$campaign->id.'_member');
         }
 
+        // Get all tasks (across all campaigns) assigned to the current user
+        $myTasksQuery = CampaignTask::whereIn('campaign_id', $campaigns->pluck('id'))
+            ->whereHas('taskMembers.campaignMember', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->with(['taskMembers.campaignMember.user', 'project', 'campaign']);
+
+        if ($myTasksStatus = request()->get('my_tasks_status')) {
+            $myTasksQuery->where('status', $myTasksStatus);
+        }
+
+        if ($myTasksProject = request()->get('my_tasks_project')) {
+            $myTasksQuery->where('campaign_project_id', $myTasksProject);
+        }
+
+        if ($myTasksPriority = request()->get('my_tasks_priority')) {
+            $myTasksQuery->where('priority', $myTasksPriority);
+        }
+
+        if ($myTasksSearch = request()->get('my_tasks_search')) {
+            $myTasksQuery->where(function ($q) use ($myTasksSearch) {
+                $q->where('title', 'like', '%'.$myTasksSearch.'%')
+                  ->orWhereHas('project', function ($pq) use ($myTasksSearch) {
+                      $pq->where('title', 'like', '%'.$myTasksSearch.'%');
+                  });
+            });
+        }
+
+        if ($myTasksCompletedDate = request()->get('my_tasks_completed_date')) {
+            $myTasksQuery->whereDate('completed_at', $myTasksCompletedDate);
+        }
+
+        $myTasks = $myTasksQuery->orderByDesc('created_at')->get();
+
+        // Projects available for filtering (from the user's campaigns)
+        $myTasksProjects = CampaignProject::whereIn('campaign_id', $campaigns->pluck('id'))->get();
+
+        // Summary: tasks and projects accomplished today (current user)
+        $summaryAccomplishedTasks = CampaignTask::whereIn('campaign_id', $campaigns->pluck('id'))
+            ->where('status', 'accomplished')
+            ->whereDate('completed_at', today())
+            ->whereHas('taskMembers.campaignMember', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->with(['project', 'campaign'])
+            ->orderByDesc('completed_at')
+            ->get();
+
+        $summaryAccomplishedProjects = CampaignProject::whereIn('campaign_id', $campaigns->pluck('id'))
+            ->where('status', 'accomplished')
+            ->whereDate('updated_at', today())
+            ->with('campaign')
+            ->orderByDesc('updated_at')
+            ->get();
+
+        $reportLogsDate = request()->input('report_logs_date');
+
+        $reportLogs = AccomplishmentReportLog::where('user_id', $user->id)
+            ->when($reportLogsDate, function ($q) use ($reportLogsDate) {
+                $q->whereDate('created_at', $reportLogsDate);
+            })
+            ->orderByDesc('created_at')
+            ->limit($reportLogsDate ? 50 : 10)
+            ->get();
+
         return view('user.campaigns.index', [
             'campaigns' => $campaigns,
+            'myTasks' => $myTasks,
+            'myTasksProjects' => $myTasksProjects,
+            'myTasksFilterStatus' => $myTasksStatus,
+            'myTasksFilterProject' => $myTasksProject,
+            'myTasksFilterPriority' => $myTasksPriority,
+            'myTasksFilterSearch' => $myTasksSearch,
+            'myTasksFilterCompletedDate' => $myTasksCompletedDate,
+            'summaryAccomplishedTasks' => $summaryAccomplishedTasks,
+            'summaryAccomplishedProjects' => $summaryAccomplishedProjects,
+            'reportLogs' => $reportLogs,
+            'reportLogsDate' => $reportLogsDate,
         ]);
+    }
+
+    /**
+     * Send today's accomplishment report to the leader via email.
+     */
+    public function sendAccomplishmentReport(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'accomplishments' => 'required|string|max:5000',
+            'leader_email' => 'required|email',
+        ]);
+
+        $campaigns = Campaign::whereHas('members', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })->get();
+
+        $accomplishedTasks = CampaignTask::whereIn('campaign_id', $campaigns->pluck('id'))
+            ->where('status', 'accomplished')
+            ->whereDate('completed_at', today())
+            ->whereHas('taskMembers.campaignMember', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->with(['project', 'campaign'])
+            ->orderByDesc('completed_at')
+            ->get();
+
+        $accomplishedProjects = CampaignProject::whereIn('campaign_id', $campaigns->pluck('id'))
+            ->where('status', 'accomplished')
+            ->whereDate('updated_at', today())
+            ->with('campaign')
+            ->orderByDesc('updated_at')
+            ->get();
+
+        try {
+            Mail::to($validated['leader_email'])->send(new AccomplishmentReport(
+                $user,
+                $validated['accomplishments'],
+                $accomplishedTasks,
+                $accomplishedProjects,
+            ));
+
+            AccomplishmentReportLog::create([
+                'user_id' => $user->id,
+                'leader_email' => $validated['leader_email'],
+                'accomplishments' => $validated['accomplishments'],
+                'status' => 'sent',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Your accomplishment report has been sent to your leader.',
+            ]);
+        } catch (\Throwable $e) {
+            AccomplishmentReportLog::create([
+                'user_id' => $user->id,
+                'leader_email' => $validated['leader_email'],
+                'accomplishments' => $validated['accomplishments'],
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send your accomplishment report. Please try again later.',
+            ], 500);
+        }
     }
 
     /**
@@ -61,19 +207,26 @@ class CampaignController extends Controller
     public function accomplishedProjects()
     {
         $user = request()->user();
+        $accomplishedDate = request()->input('accomplished_date');
 
         $campaigns = Campaign::whereHas('members', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })->with([
-            'projects' => function ($q) {
+            'projects' => function ($q) use ($accomplishedDate) {
                 $q->where('status', 'accomplished')
+                  ->when($accomplishedDate, function ($q) use ($accomplishedDate) {
+                      $q->whereDate('updated_at', $accomplishedDate);
+                  })
                   ->withCount('tasks');
             },
         ])->get()
           ->filter(fn ($c) => $c->projects->count() > 0)
           ->values();
 
-        return view('user.campaigns.accomplished', compact('campaigns'));
+        return view('user.campaigns.accomplished', [
+            'campaigns' => $campaigns,
+            'accomplishedDate' => $accomplishedDate,
+        ]);
     }
 
     /**

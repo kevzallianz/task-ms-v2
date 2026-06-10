@@ -45,6 +45,21 @@ class UserController extends Controller
             })
             ->count();
 
+        // Tasks assigned to the current user (across all their campaigns)
+        $myTasksAssignedQuery = CampaignTask::whereIn('campaign_id', $userCampaigns)
+            ->whereHas('taskMembers.campaignMember', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+
+        $myTasksCount = (clone $myTasksAssignedQuery)->where('status', '!=', 'accomplished')->count();
+
+        $myOpenTasks = (clone $myTasksAssignedQuery)
+            ->where('status', '!=', 'accomplished')
+            ->with(['campaign:id,name', 'project:id,title'])
+            ->orderByRaw('target_date IS NULL, target_date ASC')
+            ->limit(6)
+            ->get();
+
         // Task Status Breakdown (Campaign Tasks)
         $campaignTasksStatus = CampaignTask::whereIn('campaign_id', $userCampaigns)
             ->select('status', DB::raw('count(*) as count'))
@@ -139,6 +154,8 @@ class UserController extends Controller
             'overdueCampaignTasks' => $overdueCampaignTasks,
             'overdueCampaignTasksList' => $overdueCampaignTasksList,
             'calendarTasks' => $calendarTasks,
+            'myTasksCount' => $myTasksCount,
+            'myOpenTasks' => $myOpenTasks,
         ]);
     }
 
@@ -213,10 +230,31 @@ class UserController extends Controller
             ->where('user_id', $request->user()->id)
             ->value('campaign_id');
 
-        $projects = Project::where('campaign_id', $campaignId)
-            ->orWhereHas('contributors', function ($query) use ($campaignId) {
-                $query->where('campaign_id', $campaignId);
+        $search = $request->input('search');
+        $status = $request->input('status');
+
+        $projects = Project::where(function ($query) use ($campaignId) {
+                $query->where('campaign_id', $campaignId)
+                    ->orWhereHas('contributors', function ($q) use ($campaignId) {
+                        $q->where('campaign_id', $campaignId);
+                    });
             })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            })
+            ->when($status, function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->withCount([
+                'tasks',
+                'tasks as completed_tasks_count' => function ($query) {
+                    $query->where('status', 'completed');
+                },
+            ])
+            ->with(['user', 'campaign'])
             ->latest('created_at')
             ->get();
 
@@ -227,6 +265,8 @@ class UserController extends Controller
         return view('user.projects.index', [
             'projects' => $projects,
             'campaigns' => $campaigns,
+            'filterSearch' => $search,
+            'filterStatus' => $status,
         ]);
     }
 }
