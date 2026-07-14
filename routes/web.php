@@ -84,6 +84,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/~/users/bulk/campaign', [SuperAdminController::class, 'assignUsersToCampaignBulk'])->name('superadmin.users.assign-campaign-bulk');
         Route::put('/~/users/{user}/role', [SuperAdminController::class, 'updateUserRole'])->name('superadmin.users.update-role');
         Route::post('/~/users/{user}/campaign', [SuperAdminController::class, 'assignUserToCampaign'])->name('superadmin.users.assign-campaign');
+        Route::post('/~/users/{user}/password-reset', [SuperAdminController::class, 'sendUserPasswordReset'])
+            ->middleware('throttle:5,1')
+            ->name('superadmin.users.password-reset');
         Route::delete('/~/users/{user}', [SuperAdminController::class, 'deleteUser'])->name('superadmin.users.delete');
     });
 

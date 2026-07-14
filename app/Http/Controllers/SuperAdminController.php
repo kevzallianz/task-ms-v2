@@ -7,6 +7,7 @@ use App\Models\CampaignMember;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 
 class SuperAdminController extends Controller
 {
@@ -15,15 +16,15 @@ class SuperAdminController extends Controller
         $search = trim($request->input('q', ''));
 
         $query = Campaign::with(['members' => function ($query) {
-                $query->select('users.id', 'name', 'email');
-            }])
+            $query->select('users.id', 'name', 'email');
+        }])
             ->withCount('members')
             ->latest('created_at');
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%$search%")
-                  ->orWhere('description', 'like', "%$search%");
+                    ->orWhere('description', 'like', "%$search%");
             });
         }
 
@@ -34,6 +35,7 @@ class SuperAdminController extends Controller
             'search' => $search,
         ]);
     }
+
     public function users(Request $request)
     {
         $search = trim($request->input('q', ''));
@@ -115,6 +117,28 @@ class SuperAdminController extends Controller
             'message' => 'User assigned to campaign.',
             'campaign' => $membership->campaign,
             'access_level' => $membership->access_level,
+        ]);
+    }
+
+    public function sendUserPasswordReset(User $user)
+    {
+        if (blank($user->email)) {
+            return response()->json([
+                'message' => 'This user does not have an email address.',
+            ], 422);
+        }
+
+        $status = Password::sendResetLink(['email' => $user->email]);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            return response()->json([
+                'message' => __($status),
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset link sent successfully.',
         ]);
     }
 

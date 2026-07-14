@@ -94,6 +94,18 @@
 
             <button
                 type="button"
+                class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-700 border border-amber-300 bg-white rounded hover:bg-amber-50 transition user-password-reset-open"
+                data-user-name="{{ $user->name ?? $user->email }}"
+                data-user-email="{{ $user->email }}"
+                data-reset-url="{{ route('superadmin.users.password-reset', $user) }}"
+                aria-label="Send password reset link to {{ $user->name ?? $user->email }}"
+            >
+                <x-heroicon-o-key class="w-4 h-4" />
+                Reset
+            </button>
+
+            <button
+                type="button"
                 class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 border border-red-300 bg-white rounded hover:bg-red-50 transition user-delete-open"
                 data-user-id="{{ $user->id }}"
                 data-user-name="{{ $user->name ?? $user->email }}"
