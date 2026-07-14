@@ -4,6 +4,9 @@ $(function () {
     const $email = $('#userPasswordResetEmail');
     const $resetUrl = $('#userPasswordResetUrl');
     const $feedback = $('#userPasswordResetFeedback');
+    const $fallback = $('#userPasswordResetFallback');
+    const $resetLink = $('#userPasswordResetLink');
+    const $copyBtn = $('#userPasswordResetCopy');
     const $confirmBtn = $('#userPasswordResetConfirm');
     const $cancelBtn = $('#userPasswordResetCancel');
     const $closeBtn = $('#userPasswordResetClose');
@@ -12,7 +15,10 @@ $(function () {
         $name.text(name || 'this user');
         $email.text(email || 'no email address');
         $resetUrl.val(url || '');
-        $feedback.addClass('hidden').removeClass('text-red-600 text-emerald-700').text('');
+        $feedback.addClass('hidden').removeClass('text-red-600 text-amber-700 text-emerald-700').text('');
+        $fallback.addClass('hidden');
+        $resetLink.val('');
+        $copyBtn.text('Copy');
         $confirmBtn.prop('disabled', false).text('Send Reset Link');
         $modal.removeClass('hidden').addClass('flex');
     }
@@ -36,6 +42,21 @@ $(function () {
         if (event.target === this) closeModal();
     });
 
+    $copyBtn.on('click', async function () {
+        const resetLink = $resetLink.val();
+
+        if (!resetLink) return;
+
+        try {
+            await navigator.clipboard.writeText(resetLink);
+            $copyBtn.text('Copied');
+        } catch (error) {
+            $resetLink.trigger('select');
+            document.execCommand('copy');
+            $copyBtn.text('Copied');
+        }
+    });
+
     $confirmBtn.on('click', async function () {
         const url = $resetUrl.val();
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -45,7 +66,7 @@ $(function () {
             return;
         }
 
-        $feedback.addClass('hidden').removeClass('text-red-600 text-emerald-700').text('');
+        $feedback.addClass('hidden').removeClass('text-red-600 text-amber-700 text-emerald-700').text('');
         $confirmBtn.prop('disabled', true).text('Sending...');
 
         try {
@@ -56,10 +77,18 @@ $(function () {
                     'X-CSRF-TOKEN': csrfToken,
                 },
             });
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok || !data.success) {
                 $feedback.removeClass('hidden').addClass('text-red-600').text(data?.message || 'Unable to send the reset link.');
+                return;
+            }
+
+            if (data.delivered === false && data.reset_url) {
+                $feedback.removeClass('hidden').addClass('text-amber-700').text(data.message);
+                $fallback.removeClass('hidden');
+                $resetLink.val(data.reset_url);
+                $confirmBtn.text('Reset Link Ready');
                 return;
             }
 
@@ -69,7 +98,7 @@ $(function () {
             console.error('Failed to send password reset link', error);
             $feedback.removeClass('hidden').addClass('text-red-600').text('Unexpected error. Please try again.');
         } finally {
-            if ($confirmBtn.text() !== 'Link Sent') {
+            if (!['Link Sent', 'Reset Link Ready'].includes($confirmBtn.text())) {
                 $confirmBtn.prop('disabled', false).text('Send Reset Link');
             }
         }

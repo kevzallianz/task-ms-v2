@@ -7,7 +7,9 @@ use App\Models\CampaignMember;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Throwable;
 
 class SuperAdminController extends Controller
 {
@@ -128,16 +130,39 @@ class SuperAdminController extends Controller
             ], 422);
         }
 
-        $status = Password::sendResetLink(['email' => $user->email]);
+        $token = null;
+        $resetUrl = null;
 
-        if ($status !== Password::RESET_LINK_SENT) {
+        try {
+            $token = Password::createToken($user);
+            $resetUrl = route('password.reset', ['token' => $token])
+                .'?email='.urlencode($user->email);
+
+            $user->sendPasswordResetNotification($token);
+        } catch (Throwable $exception) {
+            Log::warning('Unable to email a superadmin-generated password reset link.', [
+                'target_user_id' => $user->id,
+                'exception' => $exception::class,
+            ]);
+
+            if ($token !== null && $resetUrl !== null) {
+                return response()->json([
+                    'success' => true,
+                    'delivered' => false,
+                    'message' => 'Email delivery is unavailable. Copy and securely share the reset link below.',
+                    'reset_url' => $resetUrl,
+                ]);
+            }
+
             return response()->json([
-                'message' => __($status),
-            ], 422);
+                'success' => false,
+                'message' => 'Unable to create a password reset link. Please try again later.',
+            ], 503);
         }
 
         return response()->json([
             'success' => true,
+            'delivered' => true,
             'message' => 'Password reset link sent successfully.',
         ]);
     }

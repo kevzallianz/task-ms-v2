@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\SuperAdminController;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Schema;
 
 beforeEach(function () {
@@ -61,10 +63,40 @@ test('a superadmin can send a user a password reset link', function () {
     $response->assertOk()
         ->assertJson([
             'success' => true,
+            'delivered' => true,
             'message' => 'Password reset link sent successfully.',
         ]);
 
     Notification::assertSentTo($user, ResetPassword::class);
+});
+
+test('a reset link remains available when email delivery fails', function () {
+    $user = new class extends User
+    {
+        public function sendPasswordResetNotification($token): void
+        {
+            throw new RuntimeException('Simulated mail transport failure.');
+        }
+    };
+    $user->forceFill([
+        'id' => 99,
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+    ]);
+
+    Password::shouldReceive('createToken')
+        ->once()
+        ->with($user)
+        ->andReturn('test-reset-token');
+
+    $response = app(SuperAdminController::class)->sendUserPasswordReset($user);
+    $data = $response->getData(true);
+
+    expect($response->getStatusCode())->toBe(200)
+        ->and($data['success'])->toBeTrue()
+        ->and($data['delivered'])->toBeFalse()
+        ->and($data['reset_url'])->toContain('test-reset-token')
+        ->and($data['reset_url'])->toContain(urlencode($user->email));
 });
 
 test('a regular user cannot send another user a password reset link', function () {

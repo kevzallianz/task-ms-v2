@@ -23,6 +23,17 @@
 
             <p id="userPasswordResetFeedback" class="text-sm hidden" role="status"></p>
 
+            <div id="userPasswordResetFallback" class="hidden space-y-2">
+                <label for="userPasswordResetLink" class="text-xs font-medium text-gray-700">Secure reset link</label>
+                <div class="flex gap-2">
+                    <input id="userPasswordResetLink" type="text" readonly class="min-w-0 flex-1 px-3 py-2 text-xs border border-secondary/30 rounded-md bg-gray-50">
+                    <button type="button" id="userPasswordResetCopy" class="px-3 py-2 text-sm font-medium text-secondary border border-secondary/40 rounded-md hover:bg-secondary/10">
+                        Copy
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500">Anyone with this link can reset the user's password. Share it only with the intended user.</p>
+            </div>
+
             <div class="flex justify-end gap-3">
                 <button type="button" id="userPasswordResetCancel" class="px-4 py-2 text-sm font-medium text-secondary border border-secondary/40 rounded-md hover:bg-secondary/10">
                     Cancel
