@@ -36,7 +36,7 @@
 				type="button"
 				id="bulkAssignOpen"
 				class="px-4 py-2 text-sm font-medium text-white bg-primary rounded disabled:opacity-50 disabled:cursor-not-allowed"
-				data-update-url="{{ route('superadmin.users.assign-campaign-bulk') }}"
+				data-update-url="{{ route('superadmin.users.assign-campaign-bulk', [], false) }}"
 				disabled
 			>Assign to Campaign</button>
 		</div>

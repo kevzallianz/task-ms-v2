@@ -16,6 +16,10 @@
                 <x-heroicon-o-users class="w-5 h-5" />
                 <span class="sidebar-text">Users</span>
             </x-nav-links>
+            <x-nav-links title="My Campaign" href="{{ route('user.campaign') }}" :active="request()->is('campaign*')">
+                <x-heroicon-o-rectangle-group class="w-5 h-5" />
+                <span class="sidebar-text">My Campaign</span>
+            </x-nav-links>
             <x-nav-links title="Profile" href="{{ route('user.profile') }}" :active="request()->is('profile*')">
                 <x-heroicon-o-user-circle class="w-5 h-5" />
                 <span class="sidebar-text">Profile</span>

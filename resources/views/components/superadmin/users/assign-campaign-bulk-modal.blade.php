@@ -11,6 +11,7 @@
         </div>
 
         <form id="userCampaignBulkForm" class="px-4 py-4 space-y-4">
+            @csrf
             <input type="hidden" id="userCampaignBulkUpdateUrl" value="">
             <input type="hidden" id="userCampaignBulkUserIds" value="">
 

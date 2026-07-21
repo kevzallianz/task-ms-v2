@@ -72,7 +72,7 @@
                 data-user-name="{{ $user->name ?? $user->email }}"
                 data-current-campaign-id="{{ $campaign->id ?? '' }}"
                 data-current-access-level="{{ $accessLevel ?? '' }}"
-                data-update-url="{{ route('superadmin.users.assign-campaign', $user) }}"
+                data-update-url="{{ route('superadmin.users.assign-campaign', $user, false) }}"
                 aria-label="Assign campaign for {{ $user->name ?? $user->email }}"
             >
                 <x-heroicon-o-briefcase class="w-4 h-4" />

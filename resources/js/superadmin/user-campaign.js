@@ -92,7 +92,7 @@ $(function () {
         const campaignId = $campaignSelect.val();
         const accessLevel = $form.find('input[name="access_level"]:checked').val();
         const userId = $userId.val();
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const csrfToken = $form.find('input[name="_token"]').val();
 
         if (!updateUrl || !csrfToken || !campaignId || !accessLevel) {
             $feedback.removeClass('hidden').text('Campaign and access level are required.');
@@ -105,18 +105,25 @@ $(function () {
         try {
             const response = await fetch(updateUrl, {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                 },
-                body: JSON.stringify({ campaign_id: campaignId, access_level: accessLevel }),
+                body: JSON.stringify({
+                    _token: csrfToken,
+                    campaign_id: campaignId,
+                    access_level: accessLevel,
+                }),
             });
 
             const data = await response.json();
 
             if (!response.ok || !data.success) {
-                const message = data?.message || 'Unable to assign campaign.';
+                const message = response.status === 419
+                    ? 'Your session expired. Refresh the page and try again.'
+                    : data?.message || 'Unable to assign campaign.';
                 $feedback.removeClass('hidden').addClass('text-red-600').text(message);
                 return;
             }
